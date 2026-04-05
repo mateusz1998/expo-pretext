@@ -1,7 +1,7 @@
 import { useMemo, useEffect, useRef } from 'react'
-import { prepare, measureHeights } from '../prepare.js'
-import { layout } from '../layout.js'
-import type { TextStyle } from '../types.js'
+import { prepare, measureHeights } from '../prepare'
+import { layout } from '../layout'
+import type { TextStyle } from '../types'
 
 type FlashListLayoutResult = {
   estimatedItemSize: number

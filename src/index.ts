@@ -18,20 +18,20 @@ export type {
   InlineFlowCursor,
   InlineFlowFragment,
   InlineFlowLine,
-} from './types.js'
+} from './types'
 
 // --- Simple API ---
-export { useTextHeight } from './hooks/useTextHeight.js'
-export { usePreparedText } from './hooks/usePreparedText.js'
-export { useFlashListHeights } from './hooks/useFlashListHeights.js'
-export { measureHeights } from './prepare.js'
+export { useTextHeight } from './hooks/useTextHeight'
+export { usePreparedText } from './hooks/usePreparedText'
+export { useFlashListHeights } from './hooks/useFlashListHeights'
+export { measureHeights } from './prepare'
 
 // --- Core API ---
-export { prepare, prepareWithSegments } from './prepare.js'
-export { layout, layoutWithLines, layoutNextLine, walkLineRanges, measureNaturalWidth } from './layout.js'
+export { prepare, prepareWithSegments } from './prepare'
+export { layout, layoutWithLines, layoutNextLine, walkLineRanges, measureNaturalWidth } from './layout'
 
 // --- Rich Inline (formerly inline-flow) ---
-export { prepareInlineFlow, walkInlineFlowLines, measureInlineFlow } from './rich-inline.js'
+export { prepareInlineFlow, walkInlineFlowLines, measureInlineFlow } from './rich-inline'
 
 // --- Utilities ---
-export { clearCache, setLocale } from './layout.js'
+export { clearCache, setLocale } from './layout'

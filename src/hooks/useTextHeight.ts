@@ -1,7 +1,7 @@
 import { useRef, useMemo } from 'react'
-import { prepareStreaming } from '../streaming.js'
-import { layout } from '../layout.js'
-import type { TextStyle, PrepareOptions } from '../types.js'
+import { prepareStreaming } from '../streaming'
+import { layout } from '../layout'
+import type { TextStyle, PrepareOptions } from '../types'
 
 export function useTextHeight(
   text: string,

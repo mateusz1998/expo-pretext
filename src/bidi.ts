@@ -8,7 +8,7 @@ import {
   latin1BidiTypes,
   nonLatin1BidiRanges,
   type GeneratedBidiType as BidiType,
-} from './generated/bidi-data.js'
+} from './generated/bidi-data'
 
 function classifyCodePoint(codePoint: number): BidiType {
   if (codePoint <= 0x00FF) return latin1BidiTypes[codePoint]!

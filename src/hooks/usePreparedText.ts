@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
-import { prepare } from '../prepare.js'
-import type { TextStyle, PreparedText, PrepareOptions } from '../types.js'
+import { prepare } from '../prepare'
+import type { TextStyle, PreparedText, PrepareOptions } from '../types'
 
 export function usePreparedText(
   text: string,

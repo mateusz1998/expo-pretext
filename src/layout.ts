@@ -17,7 +17,7 @@
 //   clearCache()                         — clears internal + JS caches
 //   setLocale(locale?)                   — sets locale for analysis
 
-import { computeSegmentLevels } from './bidi.js'
+import { computeSegmentLevels } from './bidi'
 import {
   canContinueKeepAllTextRun,
   clearAnalysisCaches,
@@ -33,16 +33,16 @@ import {
   type TextAnalysis,
   type WhiteSpaceMode,
   type WordBreakMode,
-} from './analysis.js'
-import { getEngineProfile } from './engine-profile.js'
+} from './analysis'
+import { getEngineProfile } from './engine-profile'
 import {
   countPreparedLines,
   layoutNextLineRange as stepPreparedLineRange,
   measurePreparedLineGeometry,
   walkPreparedLines,
   type InternalLayoutLine,
-} from './line-break.js'
-import { clearJSCache } from './cache.js'
+} from './line-break'
+import { clearJSCache } from './cache'
 import type {
   TextStyle,
   LayoutCursor,
@@ -51,7 +51,7 @@ import type {
   LayoutLineRange,
   PreparedText,
   PreparedTextWithSegments as PublicPreparedTextWithSegments,
-} from './types.js'
+} from './types'
 
 let sharedGraphemeSegmenter: Intl.Segmenter | null = null
 // Rich-path only. Reuses grapheme splits while materializing multiple lines
@@ -816,7 +816,7 @@ export type { LayoutCursor, LayoutResult, LayoutLineRange, LayoutLine }
 
 // prepareWithSegments is now provided by prepare.ts, which wires the full
 // pipeline: native segmentation + measurement → analysis → buildPreparedTextWithSegments.
-// Import from './prepare.js' instead of layout.js for this function.
+// Import from './prepare' instead of layout.js for this function.
 
 // --- Cache management ---
 

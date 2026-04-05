@@ -19,20 +19,20 @@ import {
   type LayoutLineRange,
   type LayoutResult,
   type PreparedTextWithSegments,
-} from './layout.js'
-import { prepareWithSegments } from './prepare.js'
+} from './layout'
+import { prepareWithSegments } from './prepare'
 import {
   layoutNextLineRange as stepPreparedLineRangeRaw,
   type LineBreakCursor,
   stepPreparedLineGeometry as stepPreparedLineGeometryRaw,
-} from './line-break.js'
+} from './line-break'
 
 // The opaque PreparedTextWithSegments is structurally compatible with
 // PreparedLineBreakData at runtime, but TypeScript's branded types hide that.
 // These wrappers bridge the gap without exposing internals.
 const stepPreparedLineRange = stepPreparedLineRangeRaw as (prepared: any, start: any, maxWidth: number) => any
 const stepPreparedLineGeometry = stepPreparedLineGeometryRaw as (prepared: any, start: any, maxWidth: number) => any
-import type { TextStyle } from './types.js'
+import type { TextStyle } from './types'
 
 declare const preparedInlineFlowBrand: unique symbol
 

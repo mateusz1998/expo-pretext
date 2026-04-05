@@ -1,14 +1,14 @@
-import { getNativeModule } from './ExpoPretext.js'
-import { analyzeText, type AnalysisProfile } from './analysis.js'
+import { getNativeModule } from './ExpoPretext'
+import { analyzeText, type AnalysisProfile } from './analysis'
 import {
   buildPreparedText,
   buildPreparedTextWithSegments,
   layout,
   type PrepareOptions as LayoutPrepareOptions,
-} from './layout.js'
-import { cacheNativeResult, tryResolveAllFromCache, clearJSCache } from './cache.js'
-import { textStyleToFontDescriptor, getFontKey, warnIfFontNotLoaded } from './font-utils.js'
-import { getEngineProfile } from './engine-profile.js'
+} from './layout'
+import { cacheNativeResult, tryResolveAllFromCache, clearJSCache } from './cache'
+import { textStyleToFontDescriptor, getFontKey, warnIfFontNotLoaded } from './font-utils'
+import { getEngineProfile } from './engine-profile'
 import type {
   TextStyle,
   PreparedText,
@@ -16,7 +16,7 @@ import type {
   PrepareOptions,
   NativeSegmentResult,
   LayoutResult,
-} from './types.js'
+} from './types'
 
 const SYNC_THRESHOLD = 5000
 

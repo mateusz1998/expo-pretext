@@ -1,8 +1,8 @@
-import { getNativeModule } from './ExpoPretext.js'
-import { prepare } from './prepare.js'
-import { textStyleToFontDescriptor, getFontKey } from './font-utils.js'
-import { cacheNativeResult } from './cache.js'
-import type { TextStyle, PreparedText, PrepareOptions } from './types.js'
+import { getNativeModule } from './ExpoPretext'
+import { prepare } from './prepare'
+import { textStyleToFontDescriptor, getFontKey } from './font-utils'
+import { cacheNativeResult } from './cache'
+import type { TextStyle, PreparedText, PrepareOptions } from './types'
 
 type StreamingState = {
   sourceText: string
