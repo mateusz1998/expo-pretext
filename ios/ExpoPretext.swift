@@ -78,8 +78,13 @@ public class ExpoPretext: Module {
         let nextIndex = segment.index(after: index)
         // Walk to next grapheme cluster boundary
         let grapheme = String(segment[index..<nextIndex])
-        let size = (grapheme as NSString).size(withAttributes: [.font: font])
-        widths.append(Double(size.width))
+        let attrStr = NSAttributedString(string: grapheme, attributes: [.font: font])
+        let rect = attrStr.boundingRect(
+          with: CGSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude),
+          options: [.usesLineFragmentOrigin, .usesFontLeading],
+          context: nil
+        )
+        widths.append(Double(ceil(rect.width * 100) / 100))
         index = nextIndex
       }
       return widths
@@ -89,8 +94,13 @@ public class ExpoPretext: Module {
     Function("remeasureMerged") { (segments: [String], fontDesc: [String: Any]) -> [Double] in
       let font = self.resolveFont(fontDesc)
       return segments.map { segment in
-        let size = (segment as NSString).size(withAttributes: [.font: font])
-        return Double(size.width)
+        let attrStr = NSAttributedString(string: segment, attributes: [.font: font])
+        let rect = attrStr.boundingRect(
+          with: CGSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude),
+          options: [.usesLineFragmentOrigin, .usesFontLeading],
+          context: nil
+        )
+        return Double(ceil(rect.width * 100) / 100)
       }
     }
 
@@ -257,9 +267,15 @@ public class ExpoPretext: Module {
         measureCache[fontKey]?[segment] = entry
         widths.append(entry.width)
       } else {
-        // Measure the segment
-        let size = (segment as NSString).size(withAttributes: [.font: font])
-        let width = Double(size.width)
+        // Measure the segment using NSAttributedString.boundingRect
+        // This uses TextKit internally — same layout engine as RN Text
+        let attrStr = NSAttributedString(string: segment, attributes: [.font: font])
+        let rect = attrStr.boundingRect(
+          with: CGSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude),
+          options: [.usesLineFragmentOrigin, .usesFontLeading],
+          context: nil
+        )
+        let width = Double(ceil(rect.width * 100) / 100) // round to 2 decimal places
         measureCache[fontKey]?[segment] = CacheEntry(width: width, hits: 1)
         widths.append(width)
 
