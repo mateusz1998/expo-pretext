@@ -4,11 +4,12 @@ import { FlashList } from '@shopify/flash-list'
 import { mockMessages, mockStreamTokens, type ChatMessage } from '../../data/mock-messages'
 import { MarkdownRenderer } from '../../components/MarkdownRenderer'
 import { markdownSample } from '../../data/sample-texts'
-import { useTextHeight } from 'expo-pretext'
+import { useTextHeight, useFlashListHeights } from 'expo-pretext'
 
 const textStyle = { fontFamily: 'System', fontSize: 16, lineHeight: 24 }
 
 function ChatBubble({ message, maxWidth }: { message: ChatMessage; maxWidth: number }) {
+  // expo-pretext predicts height before rendering — no onLayout needed
   const predictedHeight = useTextHeight(message.content, textStyle, maxWidth)
   const isUser = message.role === 'user'
 
@@ -17,6 +18,8 @@ function ChatBubble({ message, maxWidth }: { message: ChatMessage; maxWidth: num
       style={[
         styles.bubble,
         isUser ? styles.userBubble : styles.assistantBubble,
+        // Use predicted height as minHeight — prevents layout jumps
+        { minHeight: predictedHeight + 24 }, // +24 for bubble padding
       ]}
     >
       <MarkdownRenderer content={message.content} isUser={isUser} />
@@ -27,12 +30,32 @@ function ChatBubble({ message, maxWidth }: { message: ChatMessage; maxWidth: num
   )
 }
 
+function StreamingBubble({ text, maxWidth }: { text: string; maxWidth: number }) {
+  // Streaming: useTextHeight auto-detects append pattern, uses incremental extend
+  const height = useTextHeight(text, textStyle, maxWidth)
+
+  return (
+    <View style={[styles.bubble, styles.assistantBubble, styles.streamingBubble, { minHeight: height + 24 }]}>
+      <MarkdownRenderer content={text} />
+      <View style={styles.cursor} />
+    </View>
+  )
+}
+
 export default function ChatScreen() {
   const { width } = useWindowDimensions()
   const bubbleMaxWidth = width * 0.75
   const [messages] = useState<ChatMessage[]>(mockMessages)
   const [streamingText, setStreamingText] = useState('')
   const [isStreaming, setIsStreaming] = useState(false)
+
+  // expo-pretext: pre-computes heights for FlashList virtualization
+  const { estimatedItemSize, overrideItemLayout } = useFlashListHeights(
+    messages,
+    (msg: ChatMessage) => msg.content,
+    textStyle,
+    bubbleMaxWidth
+  )
 
   const startStreaming = useCallback(async () => {
     if (isStreaming) return
@@ -56,22 +79,20 @@ export default function ChatScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerText}>
-          {messages.length} messages | FlashList + expo-pretext
+          {messages.length} messages | FlashList + useFlashListHeights
         </Text>
       </View>
 
       <FlashList
         data={messages}
         renderItem={renderMessage}
-        estimatedItemSize={100}
+        estimatedItemSize={estimatedItemSize}
+        overrideItemLayout={overrideItemLayout}
         keyExtractor={msg => msg.id}
       />
 
       {streamingText !== '' && (
-        <View style={[styles.bubble, styles.assistantBubble, styles.streamingBubble]}>
-          <MarkdownRenderer content={streamingText} />
-          <View style={styles.cursor} />
-        </View>
+        <StreamingBubble text={streamingText} maxWidth={bubbleMaxWidth} />
       )}
 
       <Pressable style={styles.streamBtn} onPress={startStreaming} disabled={isStreaming}>
