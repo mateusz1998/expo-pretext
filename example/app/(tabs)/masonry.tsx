@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, ScrollView, useWindowDimensions } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
+
 import { sampleTexts } from '../../data/sample-texts'
 
 const cards = Object.entries(sampleTexts).flatMap(([lang, text], i) =>
@@ -21,7 +21,7 @@ export default function MasonryScreen() {
   const rightColumn = cards.filter((_, i) => i % 2 === 1)
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <Text style={styles.title}>Masonry Grid</Text>
       <Text style={styles.subtitle}>Heights predicted with expo-pretext</Text>
       <ScrollView contentContainerStyle={styles.grid}>
@@ -40,13 +40,13 @@ export default function MasonryScreen() {
           ))}
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   )
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f5f5f5' },
-  title: { fontSize: 24, fontWeight: '700', textAlign: 'center', marginTop: 16 },
+  title: { fontSize: 24, fontWeight: '700', textAlign: 'center', marginTop: 4 },
   subtitle: { fontSize: 14, color: '#666', textAlign: 'center', marginBottom: 16 },
   grid: { flexDirection: 'row', paddingHorizontal: 16, gap: 8 },
   column: { gap: 8 },

@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, ScrollView, useWindowDimensions } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
+
 import { sampleTexts } from '../../data/sample-texts'
 
 // TODO: Use useTextHeight() from expo-pretext for predicted heights
@@ -20,7 +20,7 @@ export default function I18nScreen() {
   const cardWidth = width - 32
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <Text style={styles.title}>i18n Showcase</Text>
       <Text style={styles.subtitle}>Text height prediction across scripts</Text>
       <ScrollView contentContainerStyle={styles.list}>
@@ -50,13 +50,13 @@ export default function I18nScreen() {
           )
         })}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   )
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f5f5f5' },
-  title: { fontSize: 24, fontWeight: '700', textAlign: 'center', marginTop: 16 },
+  title: { fontSize: 24, fontWeight: '700', textAlign: 'center', marginTop: 4 },
   subtitle: { fontSize: 14, color: '#666', textAlign: 'center', marginBottom: 16 },
   list: { padding: 16, gap: 12 },
   card: {

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { View, Text, TextInput, StyleSheet, ScrollView } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
+
 
 // TODO: Use prepareInlineFlow() + measureInlineFlow() from expo-pretext
 
@@ -10,7 +10,7 @@ export default function RichNoteScreen() {
   )
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <Text style={styles.title}>Rich Note</Text>
       <Text style={styles.subtitle}>Inline flow with mixed fonts and @mentions</Text>
 
@@ -49,13 +49,13 @@ export default function RichNoteScreen() {
           </Text>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   )
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f5f5f5' },
-  title: { fontSize: 24, fontWeight: '700', textAlign: 'center', marginTop: 16 },
+  title: { fontSize: 24, fontWeight: '700', textAlign: 'center', marginTop: 4 },
   subtitle: { fontSize: 14, color: '#666', textAlign: 'center', marginBottom: 16 },
   content: { flex: 1, padding: 16 },
   editor: {

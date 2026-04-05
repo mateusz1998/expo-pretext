@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
 import { View, Text, StyleSheet, useWindowDimensions, TextInput, Pressable } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
+
 import { chatTheme } from '../../data/chat-theme'
 import { mockMessages, mockStreamTokens, type ChatMessage } from '../../data/mock-messages'
 import { markdownSample } from '../../data/sample-texts'
@@ -38,7 +38,7 @@ export default function ChatScreen() {
   }, [isStreaming])
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       {/* Mode toggle */}
       <View style={styles.toggleRow}>
         <Pressable
@@ -89,7 +89,7 @@ export default function ChatScreen() {
           {isStreaming ? 'Streaming...' : 'Simulate AI Response'}
         </Text>
       </Pressable>
-    </SafeAreaView>
+    </View>
   )
 }
 
