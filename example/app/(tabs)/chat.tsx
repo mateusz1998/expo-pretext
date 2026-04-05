@@ -1,52 +1,12 @@
 import { useState, useCallback } from 'react'
 import { View, Text, StyleSheet, useWindowDimensions, Pressable } from 'react-native'
 import { FlashList } from '@shopify/flash-list'
-import Markdown from '@ronradtke/react-native-markdown-display'
 import { mockMessages, mockStreamTokens, type ChatMessage } from '../../data/mock-messages'
+import { MarkdownRenderer } from '../../components/MarkdownRenderer'
 import { markdownSample } from '../../data/sample-texts'
 import { useTextHeight } from 'expo-pretext'
 
 const textStyle = { fontFamily: 'System', fontSize: 16, lineHeight: 24 }
-
-const mdStylesAssistant = {
-  body: { fontSize: 16, lineHeight: 24, color: '#1a1a1a' },
-  strong: { fontWeight: '700' as const },
-  em: { fontStyle: 'italic' as const },
-  code_inline: {
-    backgroundColor: '#f0f0f0',
-    borderRadius: 4,
-    paddingHorizontal: 5,
-    paddingVertical: 2,
-    fontFamily: 'Menlo',
-    fontSize: 14,
-    color: '#d63384',
-  },
-  fence: {
-    backgroundColor: '#1e1e1e',
-    borderRadius: 8,
-    padding: 12,
-    marginVertical: 8,
-  },
-  code_block: {
-    fontFamily: 'Menlo',
-    fontSize: 13,
-    lineHeight: 20,
-    color: '#d4d4d4',
-  },
-  link: { color: '#007AFF' },
-  paragraph: { marginTop: 0, marginBottom: 8 },
-}
-
-const mdStylesUser = {
-  ...mdStylesAssistant,
-  body: { ...mdStylesAssistant.body, color: '#fff' },
-  code_inline: {
-    ...mdStylesAssistant.code_inline,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    color: '#fff',
-  },
-  link: { color: '#a0d8ff' },
-}
 
 function ChatBubble({ message, maxWidth }: { message: ChatMessage; maxWidth: number }) {
   const predictedHeight = useTextHeight(message.content, textStyle, maxWidth)
@@ -59,9 +19,7 @@ function ChatBubble({ message, maxWidth }: { message: ChatMessage; maxWidth: num
         isUser ? styles.userBubble : styles.assistantBubble,
       ]}
     >
-      <Markdown style={isUser ? mdStylesUser : mdStylesAssistant}>
-        {message.content}
-      </Markdown>
+      <MarkdownRenderer content={message.content} isUser={isUser} />
       {message.reactions && (
         <Text style={styles.reactions}>{message.reactions.join(' ')}</Text>
       )}
@@ -111,7 +69,7 @@ export default function ChatScreen() {
 
       {streamingText !== '' && (
         <View style={[styles.bubble, styles.assistantBubble, styles.streamingBubble]}>
-          <Markdown style={mdStylesAssistant}>{streamingText}</Markdown>
+          <MarkdownRenderer content={streamingText} />
           <View style={styles.cursor} />
         </View>
       )}
