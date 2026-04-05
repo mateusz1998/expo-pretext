@@ -39,6 +39,13 @@ interface ExpoPretextNativeModule extends InstanceType<typeof NativeModule> {
     options?: MeasureNativeOptions
   ): Promise<NativeSegmentResult>
 
+  measureTextHeight(
+    text: string,
+    font: FontDescriptor,
+    maxWidth: number,
+    lineHeight: number
+  ): { height: number; lineCount: number }
+
   clearNativeCache(): void
 
   setNativeCacheSize(size: number): void

@@ -126,6 +126,54 @@ public class ExpoPretext: Module {
     Function("setNativeCacheSize") { (size: Int) in
       self.maxCacheSize = max(size, 100) // floor at 100 to avoid thrashing
     }
+
+    // measureTextHeight(text, font, maxWidth, lineHeight) -> { height, lineCount }
+    // Uses NSLayoutManager (TextKit) — same layout engine as RN Text
+    Function("measureTextHeight") {
+      (text: String, fontDesc: [String: Any], maxWidth: Double, lineHeight: Double) -> [String: Any] in
+      let font = self.resolveFont(fontDesc)
+
+      let textStorage = NSTextStorage(string: text, attributes: [
+        .font: font,
+        .paragraphStyle: {
+          let ps = NSMutableParagraphStyle()
+          ps.minimumLineHeight = CGFloat(lineHeight)
+          ps.maximumLineHeight = CGFloat(lineHeight)
+          return ps
+        }()
+      ])
+
+      let layoutManager = NSLayoutManager()
+      let textContainer = NSTextContainer(size: CGSize(
+        width: CGFloat(maxWidth),
+        height: CGFloat.greatestFiniteMagnitude
+      ))
+      textContainer.lineFragmentPadding = 0
+
+      layoutManager.addTextContainer(textContainer)
+      textStorage.addLayoutManager(layoutManager)
+
+      // Force layout
+      layoutManager.ensureLayout(for: textContainer)
+
+      let usedRect = layoutManager.usedRect(for: textContainer)
+      let glyphRange = layoutManager.glyphRange(for: textContainer)
+
+      // Count lines
+      var lineCount = 0
+      var index = glyphRange.location
+      while index < NSMaxRange(glyphRange) {
+        var lineRange = NSRange()
+        layoutManager.lineFragmentRect(forGlyphAt: index, effectiveRange: &lineRange)
+        lineCount += 1
+        index = NSMaxRange(lineRange)
+      }
+
+      return [
+        "height": Double(ceil(usedRect.height)),
+        "lineCount": lineCount
+      ]
+    }
   }
 
   // MARK: - Memory Warning
