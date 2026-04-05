@@ -4,7 +4,9 @@ import { sampleTexts } from '../../data/sample-texts'
 import { useTextHeight } from 'expo-pretext'
 
 const testWidths = [200, 280, 360]
-const textStyleConfig = { fontFamily: 'System', fontSize: 16, lineHeight: 24 }
+// Note: 'System' font is unsafe for accuracy (SF Pro Text vs Display mismatch)
+// Use explicit font name for reliable measurement
+const textStyleConfig = { fontFamily: 'Helvetica Neue', fontSize: 16, lineHeight: 24 }
 
 function AccuracyRow({ text, testWidth }: { text: string; testWidth: number }) {
   const [actual, setActual] = useState<number | null>(null)
@@ -114,5 +116,5 @@ const styles = StyleSheet.create({
     borderColor: '#ddd',
     alignSelf: 'flex-start',
   },
-  sampleText: { fontSize: 16, lineHeight: 24 },
+  sampleText: { fontFamily: 'Helvetica Neue', fontSize: 16, lineHeight: 24 },
 })

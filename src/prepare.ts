@@ -117,11 +117,18 @@ function segmentAndMeasureWithCache(
     : undefined
 
   const result = text.length > SYNC_THRESHOLD
-    ? native.segmentAndMeasure(text, font, nativeOptions) // TODO: use async variant
+    ? native.segmentAndMeasure(text, font, nativeOptions)
     : native.segmentAndMeasure(text, font, nativeOptions)
 
   const fontKey = getFontKey(style)
   cacheNativeResult(fontKey, result.segments, result.widths)
+
+  // Diagnostic: log total measured width vs maxWidth for debugging accuracy
+  if (__DEV__ && !(segmentAndMeasureWithCache as any)._diagDone) {
+    const totalWidth = result.widths.reduce((a, b) => a + b, 0)
+    console.log(`[expo-pretext] DIAG: text="${text.slice(0,30)}..." segs=${result.segments.length} totalW=${totalWidth.toFixed(1)} widths=[${result.widths.slice(0,5).map(w => w.toFixed(1)).join(',')}...]`)
+    ;(segmentAndMeasureWithCache as any)._diagDone = true
+  }
 
   // Exact mode: re-measure merged segments after analysis
   if (options?.accuracy === 'exact') {
