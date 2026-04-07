@@ -135,34 +135,51 @@ export function EditorialEngineDemo() {
         {orbs.map((o, i) => {
           const [r, g, b] = o.color
           return (
-            <View key={i} pointerEvents="none" style={[styles.orbContainer, {
+            <View key={i} pointerEvents="none" style={{
               position: 'absolute',
-              left: pad + o.x - o.r,
-              top: bodyTop + o.y - o.r,
-              width: o.r * 2,
-              height: o.r * 2,
-              borderRadius: o.r,
-            }]}>
-              {/* Core */}
-              <View style={[styles.orbCore, {
+              left: pad + o.x - o.r * 1.5,
+              top: bodyTop + o.y - o.r * 1.5,
+              width: o.r * 3,
+              height: o.r * 3,
+              borderRadius: o.r * 1.5,
+              // Outer glow — large, very subtle
+              shadowColor: `rgb(${r},${g},${b})`,
+              shadowOpacity: 0.12,
+              shadowRadius: o.r,
+              shadowOffset: { width: 0, height: 0 },
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}>
+              {/* Main orb body — very dark, subtle fill */}
+              <View style={{
                 width: o.r * 2,
                 height: o.r * 2,
                 borderRadius: o.r,
-                backgroundColor: `rgba(${r},${g},${b},0.15)`,
+                backgroundColor: `rgba(${r},${g},${b},0.08)`,
+                borderWidth: 0.5,
+                borderColor: `rgba(${r},${g},${b},0.12)`,
+                // Inner shadow glow
                 shadowColor: `rgb(${r},${g},${b})`,
-                shadowOpacity: 0.4,
-                shadowRadius: o.r * 0.8,
+                shadowOpacity: 0.18,
+                shadowRadius: o.r * 0.5,
                 shadowOffset: { width: 0, height: 0 },
-              }]} />
-              {/* Highlight */}
-              <View style={[styles.orbHighlight, {
-                width: o.r * 0.8,
-                height: o.r * 0.8,
-                borderRadius: o.r * 0.4,
-                top: o.r * 0.2,
-                left: o.r * 0.3,
-                backgroundColor: `rgba(${r},${g},${b},0.25)`,
-              }]} />
+              }}>
+                {/* Highlight spot — small, top-left, subtle */}
+                <View style={{
+                  position: 'absolute',
+                  width: o.r * 0.6,
+                  height: o.r * 0.6,
+                  borderRadius: o.r * 0.3,
+                  top: o.r * 0.25,
+                  left: o.r * 0.35,
+                  backgroundColor: `rgba(${r},${g},${b},0.15)`,
+                  // Highlight glow
+                  shadowColor: `rgb(${r},${g},${b})`,
+                  shadowOpacity: 0.3,
+                  shadowRadius: o.r * 0.4,
+                  shadowOffset: { width: -o.r * 0.1, height: -o.r * 0.1 },
+                }} />
+              </View>
             </View>
           )
         })}
@@ -215,15 +232,6 @@ const styles = StyleSheet.create({
   pullquote: {
     fontFamily: 'Georgia', fontStyle: 'italic', fontSize: 17, lineHeight: 24,
     color: '#b8a070',
-  },
-  orbContainer: {
-    position: 'absolute',
-  },
-  orbCore: {
-    position: 'absolute',
-  },
-  orbHighlight: {
-    position: 'absolute',
   },
   hintPill: {
     position: 'absolute', bottom: 8, alignSelf: 'center', left: '15%', right: '15%',
