@@ -1,5 +1,6 @@
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native'
-import { useState } from 'react'
+import { useState, useEffect, useLayoutEffect } from 'react'
+import { useNavigation } from 'expo-router'
 
 // Import all demos
 import { TightBubblesDemo } from '../../components/demos/TightBubbles'
@@ -80,17 +81,32 @@ const demos = [
 
 export default function DemosScreen() {
   const [activeDemo, setActiveDemo] = useState<string | null>(null)
+  const navigation = useNavigation()
+
+  useLayoutEffect(() => {
+    if (activeDemo) {
+      const demo = demos.find(d => d.id === activeDemo)!
+      navigation.setOptions({
+        headerTitle: demo.title,
+        headerLeft: () => (
+          <Pressable onPress={() => setActiveDemo(null)} style={{ paddingRight: 8 }}>
+            <Text style={{ fontSize: 16, color: '#007AFF' }}>← Demos</Text>
+          </Pressable>
+        ),
+      })
+    } else {
+      navigation.setOptions({
+        headerTitle: 'Demos',
+        headerLeft: undefined,
+      })
+    }
+  }, [activeDemo, navigation])
 
   if (activeDemo) {
     const demo = demos.find(d => d.id === activeDemo)!
     const DemoComponent = demo.component
     return (
       <View style={styles.container}>
-        <Pressable style={styles.backBtn} onPress={() => setActiveDemo(null)}>
-          <Text style={styles.backText}>← Back to Demos</Text>
-        </Pressable>
-        <Text style={styles.demoTitle}>{demo.title}</Text>
-        <Text style={styles.demoApi}>{demo.api}</Text>
         <DemoComponent />
       </View>
     )
@@ -148,8 +164,4 @@ const styles = StyleSheet.create({
   badgeAdvanced: { backgroundColor: '#fff3e0', color: '#e65100' },
   cardApi: { fontSize: 12, color: '#007AFF', marginTop: 4, fontFamily: 'Menlo' },
   cardDesc: { fontSize: 14, color: '#666', marginTop: 6, lineHeight: 20 },
-  backBtn: { padding: 12 },
-  backText: { fontSize: 16, color: '#007AFF' },
-  demoTitle: { fontSize: 20, fontWeight: '700', paddingHorizontal: 16 },
-  demoApi: { fontSize: 12, color: '#007AFF', fontFamily: 'Menlo', paddingHorizontal: 16, marginBottom: 8 },
 })
