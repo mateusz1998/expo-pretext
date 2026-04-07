@@ -1,5 +1,6 @@
 import ExpoModulesCore
 import UIKit
+import CoreText
 
 // MARK: - Cache Entry
 
@@ -79,12 +80,8 @@ public class ExpoPretext: Module {
         // Walk to next grapheme cluster boundary
         let grapheme = String(segment[index..<nextIndex])
         let attrStr = NSAttributedString(string: grapheme, attributes: [.font: font])
-        let rect = attrStr.boundingRect(
-          with: CGSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude),
-          options: [.usesLineFragmentOrigin, .usesFontLeading],
-          context: nil
-        )
-        widths.append(Double(ceil(rect.width * 100) / 100))
+        let ctLine = CTLineCreateWithAttributedString(attrStr)
+        widths.append(Double(CTLineGetTypographicBounds(ctLine, nil, nil, nil)))
         index = nextIndex
       }
       return widths
@@ -95,12 +92,8 @@ public class ExpoPretext: Module {
       let font = self.resolveFont(fontDesc)
       return segments.map { segment in
         let attrStr = NSAttributedString(string: segment, attributes: [.font: font])
-        let rect = attrStr.boundingRect(
-          with: CGSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude),
-          options: [.usesLineFragmentOrigin, .usesFontLeading],
-          context: nil
-        )
-        return Double(ceil(rect.width * 100) / 100)
+        let ctLine = CTLineCreateWithAttributedString(attrStr)
+        return Double(CTLineGetTypographicBounds(ctLine, nil, nil, nil))
       }
     }
 
@@ -315,15 +308,11 @@ public class ExpoPretext: Module {
         measureCache[fontKey]?[segment] = entry
         widths.append(entry.width)
       } else {
-        // Measure the segment using NSAttributedString.boundingRect
-        // This uses TextKit internally — same layout engine as RN Text
+        // Measure the segment using CTLine (Core Text) — this is what
+        // RN Text's underlying layout engine uses for glyph measurement
         let attrStr = NSAttributedString(string: segment, attributes: [.font: font])
-        let rect = attrStr.boundingRect(
-          with: CGSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude),
-          options: [.usesLineFragmentOrigin, .usesFontLeading],
-          context: nil
-        )
-        let width = Double(ceil(rect.width * 100) / 100) // round to 2 decimal places
+        let ctLine = CTLineCreateWithAttributedString(attrStr)
+        let width = Double(CTLineGetTypographicBounds(ctLine, nil, nil, nil))
         measureCache[fontKey]?[segment] = CacheEntry(width: width, hits: 1)
         widths.append(width)
 
