@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
     color: '#ffffff', letterSpacing: -0.5,
   },
   dropCap: {
-    position: 'absolute', top: 180, left: 16,
+    position: 'absolute', top: 192, left: 16,
     fontFamily: 'Georgia', fontWeight: '700', fontSize: 72, lineHeight: 72,
     color: '#c4a35a',
   },
