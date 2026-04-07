@@ -15,7 +15,7 @@ export function getEngineProfile(): EngineProfile {
 
   cachedProfile = Platform.select({
     ios: {
-      lineFitEpsilon: -3.0, // conservative: RN Text breaks lines earlier than CTLine segment sums predict
+      lineFitEpsilon: 0.01, // restored to default for diagnostic
       carryCJKAfterClosingQuote: true,
       preferPrefixWidthsForBreakableRuns: false,
       preferEarlySoftHyphenBreak: false,
