@@ -561,7 +561,7 @@ function getInternalPreparedWithSegments(prepared: PublicPreparedTextWithSegment
   return prepared as unknown as InternalPreparedTextWithSegments
 }
 
-function getLineHeight(prepared: InternalPreparedText, lineHeightOverride?: number): number {
+function resolveLineHeight(prepared: InternalPreparedText, lineHeightOverride?: number): number {
   if (lineHeightOverride !== undefined) return lineHeightOverride
   const style = prepared.style
   if (style !== null && style.lineHeight !== undefined) return style.lineHeight
@@ -580,7 +580,7 @@ function getLineHeight(prepared: InternalPreparedText, lineHeightOverride?: numb
 export function layout(prepared: PreparedText, maxWidth: number, lineHeight?: number): LayoutResult {
   const internal = getInternalPrepared(prepared)
   const lineCount = countPreparedLines(internal, maxWidth)
-  const lh = getLineHeight(internal, lineHeight)
+  const lh = resolveLineHeight(internal, lineHeight)
   return { lineCount, height: lineCount * lh }
 }
 
@@ -821,7 +821,7 @@ export function layoutWithLines(
     lines.push(materializeLayoutLine(internal, graphemeCache, line))
   })
 
-  const lh = getLineHeight(internal, lineHeight)
+  const lh = resolveLineHeight(internal, lineHeight)
   return { lineCount, height: lineCount * lh, lines }
 }
 
