@@ -1,6 +1,6 @@
 // example/components/MarkdownRenderer.tsx
 import { memo, useMemo } from 'react'
-import { View, Text, ScrollView, Linking } from 'react-native'
+import { View, Text, Linking } from 'react-native'
 import { prepare, layout } from 'expo-pretext'
 import { parseMarkdown, blocksToPlainText } from './markdown-parser'
 import type { MdBlock, MdSpan } from './markdown-parser'
@@ -183,26 +183,28 @@ const RenderBlock = memo(function RenderBlock({
 
     case 'table':
       return (
-        <ScrollView horizontal showsHorizontalScrollIndicator>
-          <View style={{ borderWidth: 1, borderColor: theme.tableBorderColor, borderRadius: 4 }}>
-            <View style={{ flexDirection: 'row', backgroundColor: theme.textColor === '#ffffff' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' }}>
-              {block.headers.map((cell, ci) => (
-                <View key={ci} style={{ padding: 8, borderRightWidth: ci < block.headers.length - 1 ? 1 : 0, borderRightColor: theme.tableBorderColor, minWidth: 80 }}>
+        <View style={{ borderWidth: 1, borderColor: theme.tableBorderColor, borderRadius: 4, overflow: 'hidden' }}>
+          {/* Header */}
+          <View style={{ flexDirection: 'row', backgroundColor: theme.textColor === '#ffffff' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)' }}>
+            {block.headers.map((cell, ci) => (
+              <View key={ci} style={{ flex: 1, padding: 8, borderRightWidth: ci < block.headers.length - 1 ? 1 : 0, borderRightColor: theme.tableBorderColor }}>
+                <Text style={{ fontSize: 13, lineHeight: 20, fontWeight: '600', color: theme.textColor }}>
+                  {cell.map(s => s.v).join('')}
+                </Text>
+              </View>
+            ))}
+          </View>
+          {/* Rows */}
+          {block.rows.map((row, ri) => (
+            <View key={ri} style={{ flexDirection: 'row', borderTopWidth: 1, borderTopColor: theme.tableBorderColor }}>
+              {row.map((cell, ci) => (
+                <View key={ci} style={{ flex: 1, padding: 8, borderRightWidth: ci < row.length - 1 ? 1 : 0, borderRightColor: theme.tableBorderColor }}>
                   <RenderSpans spans={cell} theme={theme} onLinkPress={onLinkPress} />
                 </View>
               ))}
             </View>
-            {block.rows.map((row, ri) => (
-              <View key={ri} style={{ flexDirection: 'row', borderTopWidth: 1, borderTopColor: theme.tableBorderColor }}>
-                {row.map((cell, ci) => (
-                  <View key={ci} style={{ padding: 8, borderRightWidth: ci < row.length - 1 ? 1 : 0, borderRightColor: theme.tableBorderColor, minWidth: 80 }}>
-                    <RenderSpans spans={cell} theme={theme} onLinkPress={onLinkPress} />
-                  </View>
-                ))}
-              </View>
-            ))}
-          </View>
-        </ScrollView>
+          ))}
+        </View>
       )
 
     case 'image':
