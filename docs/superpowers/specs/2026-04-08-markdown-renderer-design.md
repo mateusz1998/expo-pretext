@@ -36,6 +36,7 @@ type MarkdownRendererProps = {
   tightWrap?: boolean               // optional, uses expo-pretext prepare+layout
   maxWidth?: number                  // required when tightWrap=true
   overrides?: Partial<MarkdownTheme> // optional color/style overrides
+  onLinkPress?: (url: string) => void // default: Linking.openURL
 }
 
 type MarkdownTheme = {
@@ -131,6 +132,39 @@ export function blocksToPlainText(blocks: MdBlock[]): string
 8. Unordered list
 9. Image
 10. Paragraph (fallback)
+
+## Design Refinements
+
+### Tight-wrap scope limitation
+Tight-wrap only applies when content is paragraph-only (no code blocks, tables, headings, or images). If `tightWrap=true` but blocks contain non-paragraph content, fall back to `maxWidth`. Rationale: user bubbles are almost always plain text; mixed content needs full width for correct layout.
+
+### Parse memoization
+`parseMarkdown` maintains a simple `Map<string, MdBlock[]>` cache keyed by the raw markdown string. MarkdownChat generates 10k messages cycling through ~40 base messages — without caching, the same markdown parses thousands of times. Cache lives at module level, not per-component.
+
+### Table horizontal overflow
+Tables wrapped in `<ScrollView horizontal>` to handle wide tables in narrow containers. Shows horizontal scroll indicator briefly on mount.
+
+### Link press handling
+New optional prop:
+```ts
+onLinkPress?: (url: string) => void  // default: Linking.openURL(url)
+```
+Links rendered with `<Text onPress>`. Accessible by default via React Native's built-in accessibility for pressable Text.
+
+### chat.tsx migration
+Replace `isUser` prop usage with `variant`:
+```tsx
+// Before
+<MarkdownRenderer content={msg.content} isUser={isUser} />
+
+// After
+<MarkdownRenderer content={msg.content} variant={isUser ? 'dark' : 'light'} />
+```
+
+### Table and Image height estimation
+Added to `estimateBlocksHeight`:
+- **Table**: `headerHeight(lineHeight) + rows.length * rowHeight(lineHeight) + borders`
+- **Image**: fixed placeholder height of `48px` (icon + alt text chip)
 
 ## Renderer (MarkdownRenderer.tsx)
 
