@@ -14,13 +14,19 @@ Predict text heights **before rendering** — no `onLayout`, no layout jumps, no
   </tr>
   <tr>
     <td align="center">
-      <video src="https://github.com/JubaKitiashvili/expo-pretext/raw/main/assets/demos/ai-chat.mp4" width="240" />
+      <a href="https://github.com/JubaKitiashvili/expo-pretext/raw/main/assets/demos/ai-chat.mp4">
+        <img src="https://github.com/JubaKitiashvili/expo-pretext/raw/main/assets/demos/ai-chat-thumb.png" width="240" alt="AI Chat demo" />
+      </a>
     </td>
     <td align="center">
-      <video src="https://github.com/JubaKitiashvili/expo-pretext/raw/main/assets/demos/accuracy.mp4" width="240" />
+      <a href="https://github.com/JubaKitiashvili/expo-pretext/raw/main/assets/demos/accuracy.mp4">
+        <img src="https://github.com/JubaKitiashvili/expo-pretext/raw/main/assets/demos/accuracy-thumb.png" width="240" alt="Accuracy demo" />
+      </a>
     </td>
     <td align="center">
-      <video src="https://github.com/JubaKitiashvili/expo-pretext/raw/main/assets/demos/editorial-engine.mp4" width="240" />
+      <a href="https://github.com/JubaKitiashvili/expo-pretext/raw/main/assets/demos/editorial-engine.mp4">
+        <img src="https://github.com/JubaKitiashvili/expo-pretext/raw/main/assets/demos/editorial-engine-thumb.png" width="240" alt="Editorial Engine demo" />
+      </a>
     </td>
   </tr>
   <tr>
@@ -29,6 +35,8 @@ Predict text heights **before rendering** — no `onLayout`, no layout jumps, no
     <td align="center"><sub>Text reflow around obstacles</sub></td>
   </tr>
 </table>
+
+> Click thumbnails to watch videos
 
 ## Installation
 
