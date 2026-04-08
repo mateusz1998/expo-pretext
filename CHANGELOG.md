@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.4.0 — 2026-04-09
+
+### Added
+
+- **Token-level streaming layout API** — O(1) per-token line check for AI chat streaming:
+  - `getLastLineWidth(prepared, maxWidth)` — width of the last laid-out line
+  - `measureTokenWidth(token, style)` — cached natural width of a token
+  - `useStreamingLayout(text, style, maxWidth)` — hook returning `{ height, lineCount, lastLineWidth, doesNextTokenWrap }`
+
+### Performance
+
+- **useFlashListHeights batch pre-warming** — uses `measureHeights()` batch API instead of individual calls. 1 native call per 50 texts instead of 50.
+
+### Compatibility
+
+- Verified: FlashList 2.3.1, React Native 0.79.6 (Fabric/New Architecture), Expo SDK 53
+
+### Tests
+
+- 230 automated tests (was 220)
+
 ## 0.3.1 — 2026-04-09
 
 ### Tests
