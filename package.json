@@ -38,7 +38,11 @@
   "scripts": {
     "test": "bun test src/__tests__/",
     "test:all": "bun test",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "bun test src/__tests__/"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   },
   "peerDependencies": {
     "expo": ">=52.0.0",
