@@ -347,6 +347,12 @@ export function clearCache(): void {
   clearJSCache()
 }
 
+export function getLastLineWidth(prepared: PublicPreparedTextWithSegments, maxWidth: number): number {
+  const result = layoutWithLines(prepared, maxWidth)
+  if (result.lines.length === 0) return 0
+  return result.lines[result.lines.length - 1]!.width
+}
+
 export function setLocale(locale?: string): void {
   setAnalysisLocale(locale)
   clearCache()

@@ -5,7 +5,7 @@ import {
   buildPreparedTextWithSegments,
   type PrepareOptions as LayoutPrepareOptions,
 } from './build'
-import { layout } from './layout'
+import { layout, measureNaturalWidth } from './layout'
 import { cacheNativeResult, clearJSCache } from './cache'
 import { textStyleToFontDescriptor, getFontKey, getLineHeight, warnIfFontNotLoaded } from './font-utils'
 import { getEngineProfile } from './engine-profile'
@@ -241,6 +241,12 @@ export function measureHeights(
       return layout(p, maxWidth).height
     }
   })
+}
+
+export function measureTokenWidth(token: string, style: TextStyle): number {
+  if (!token) return 0
+  const prepared = prepareWithSegments(token, style)
+  return measureNaturalWidth(prepared)
 }
 
 export { clearJSCache }

@@ -24,11 +24,12 @@ export type {
 export { useTextHeight } from './hooks/useTextHeight'
 export { usePreparedText } from './hooks/usePreparedText'
 export { useFlashListHeights } from './hooks/useFlashListHeights'
-export { measureHeights } from './prepare'
+export { useStreamingLayout } from './hooks/useStreamingLayout'
+export { measureHeights, measureTokenWidth } from './prepare'
 
 // --- Core API ---
 export { prepare, prepareWithSegments } from './prepare'
-export { layout, layoutWithLines, layoutNextLine, walkLineRanges, measureNaturalWidth } from './layout'
+export { layout, layoutWithLines, layoutNextLine, walkLineRanges, measureNaturalWidth, getLastLineWidth } from './layout'
 
 // --- Rich Inline (formerly inline-flow) ---
 export { prepareInlineFlow, walkInlineFlowLines, measureInlineFlow } from './rich-inline'
