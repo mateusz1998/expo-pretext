@@ -1,7 +1,7 @@
 import { useMemo, useEffect, useRef, useCallback } from 'react'
 import { getNativeModule } from '../ExpoPretext'
 import { textStyleToFontDescriptor, getLineHeight } from '../font-utils'
-import { prepare } from '../prepare'
+import { prepare, measureHeights } from '../prepare'
 import { layout } from '../layout'
 import type { TextStyle } from '../types'
 
@@ -34,24 +34,31 @@ export function useFlashListHeights<T>(
   const heightsRef = useRef<Map<string, number>>(new Map())
   const lineHeight = getLineHeight(style)
 
-  // Pre-warm cache
+  // Pre-warm cache using batch API
   useEffect(() => {
-    const texts = data.map(getText)
+    const allTexts = data.map(getText)
     const batchSize = 50
     let offset = 0
 
     function warmNext() {
-      const batch = texts.slice(offset, offset + batchSize)
-      if (batch.length === 0) return
+      // Collect uncached texts for this batch
+      const uncached: string[] = []
+      const end = Math.min(offset + batchSize, allTexts.length)
+      for (let i = offset; i < end; i++) {
+        const text = allTexts[i]!
+        if (!heightsRef.current.has(text)) uncached.push(text)
+      }
 
-      for (const text of batch) {
-        if (!heightsRef.current.has(text)) {
-          heightsRef.current.set(text, measureSingleHeight(text, style, maxWidth))
+      // Batch measure all uncached texts at once
+      if (uncached.length > 0) {
+        const heights = measureHeights(uncached, style, maxWidth)
+        for (let i = 0; i < uncached.length; i++) {
+          heightsRef.current.set(uncached[i]!, heights[i]!)
         }
       }
 
-      offset += batchSize
-      if (typeof requestIdleCallback !== 'undefined' && offset < texts.length) {
+      offset = end
+      if (typeof requestIdleCallback !== 'undefined' && offset < allTexts.length) {
         requestIdleCallback(warmNext)
       }
     }
@@ -59,9 +66,15 @@ export function useFlashListHeights<T>(
     if (typeof requestIdleCallback !== 'undefined') {
       requestIdleCallback(warmNext)
     } else {
-      for (const text of texts) {
-        if (!heightsRef.current.has(text)) {
-          heightsRef.current.set(text, measureSingleHeight(text, style, maxWidth))
+      // No requestIdleCallback — batch all at once
+      const uncached: string[] = []
+      for (const text of allTexts) {
+        if (!heightsRef.current.has(text)) uncached.push(text)
+      }
+      if (uncached.length > 0) {
+        const heights = measureHeights(uncached, style, maxWidth)
+        for (let i = 0; i < uncached.length; i++) {
+          heightsRef.current.set(uncached[i]!, heights[i]!)
         }
       }
     }
