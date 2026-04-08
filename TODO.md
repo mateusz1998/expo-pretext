@@ -59,6 +59,46 @@ All fixes address O(n^2) -> O(n) regressions on long texts (10k+ chars). Critica
 - [ ] Inline comments for complex algorithms in `analysis.ts` and `line-break.ts`
 - [ ] Migration guide when API changes
 
+## Future vision
+
+### Animation & Interactive layout
+
+- [ ] **useAnimatedTextHeight** — Reanimated integration for smooth height transitions when text changes (streaming, edit, expand/collapse). Interpolate old height → new height without layout jumps.
+- [ ] **Typewriter effect** — Token appears, line fills, wraps to next line — all pre-calculated. Skeleton placeholder at exact final height before text arrives.
+- [ ] **Drag-to-resize obstacle reflow** — `useObstacleLayout(text, style, obstacles, width)` hook. User drags an obstacle, text reflows at 60fps. Editorial Engine demo already shows this; promote to a reusable hook.
+- [ ] **Pinch-to-zoom text** — fontSize changes per gesture frame, `layout()` at 0.0002ms gives 120+ layouts per frame budget at 60fps.
+- [ ] **Collapsible sections** — Pre-compute heights for both expanded and collapsed states. Animate between them smoothly.
+
+### AI streaming advanced
+
+- [ ] **Token-level incremental layout** — Instead of full re-prepare per token, O(1) check: "does this token fit on the current line or start a new one?" Dramatically reduces work for streaming.
+- [ ] **Speculative layout** — While waiting for next token, predict final response height based on average response length. Pre-position scroll target.
+- [ ] **Multi-bubble parallel streaming** — Multiple AI responses streaming simultaneously (parallel tool calls). Each bubble's height changes independently, FlashList handles all smoothly.
+- [ ] **Height change diffing** — "Text changed from X to Y, which lines were affected?" — minimal re-render in virtualized lists.
+
+### Camera & AR integration
+
+Integration with `react-native-vision-camera` and `expo-camera` for real-time text overlay on camera frames:
+
+- [ ] **Object detection labels** — ML model detects objects, text labels appear next to them. Pre-measured to avoid overlapping other labels. Obstacle layout ensures no label collisions.
+- [ ] **Live translation overlay** — Camera sees text (OCR), translated text appears in same-sized bounding box. `prepare()` + `layout()` guarantees the translation fits before rendering.
+- [ ] **AR text annotations** — 3D scene with text bubbles that flow around each other. Obstacle layout keeps annotations readable and non-overlapping as camera moves.
+- [ ] **AI live video analysis** — Real-time video analysis with streaming commentary overlay. Text appears, grows, wraps — all pre-measured for smooth 30fps overlay.
+- [ ] **Smart subtitle positioning** — Camera feed with subtitles that avoid covering faces/important areas. Face detection → obstacles, subtitle text flows around them.
+
+### Platform expansion
+
+- [ ] **Expo Web support** — Canvas API measurement backend. Original Pretext already does this — port the web path back. 3x audience.
+- [ ] **Text fitting** — Inverse problem: "What fontSize fits this text in this box?" Binary search over `layout()`.
+- [ ] **Font metrics API** — Expose ascender, descender, x-height, cap-height from native. Baseline alignment for mixed-font layouts.
+- [ ] **Custom line break rules** — User-defined break opportunities (break at `/` in URLs, `.` in decimals, camelCase boundaries).
+
+### Developer experience
+
+- [ ] **Debug overlay** — `<PretextDebugOverlay>` showing predicted vs actual heights, cache hit rate, measurement timing on every measured element.
+- [ ] **Snapshot testing** — `expectHeightSnapshot(texts, style, width)` for CI regression detection across versions.
+- [ ] **Performance budget** — `prepare(text, style, { budgetMs: 5 })` — returns estimate if native measurement exceeds budget.
+
 ## Not worth doing right now
 
 - Do not add a full markdown renderer to the core library. The example MarkdownRenderer demonstrates the pattern; users compose their own.
