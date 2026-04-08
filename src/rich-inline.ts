@@ -32,35 +32,16 @@ import {
 // These wrappers bridge the gap without exposing internals.
 const stepPreparedLineRange = stepPreparedLineRangeRaw as (prepared: any, start: any, maxWidth: number) => any
 const stepPreparedLineGeometry = stepPreparedLineGeometryRaw as (prepared: any, start: any, maxWidth: number) => any
-import type { TextStyle } from './types'
+import type {
+  TextStyle,
+  InlineFlowItem,
+  PreparedInlineFlow,
+  InlineFlowCursor,
+  InlineFlowFragment,
+  InlineFlowLine,
+} from './types'
 
-declare const preparedInlineFlowBrand: unique symbol
-
-export type InlineFlowItem = {
-  text: string // Raw author text, including any leading/trailing collapsible spaces
-  style: TextStyle // TextStyle used to prepare and measure this item
-  atomic?: boolean // true keeps the item atomic (no mid-item breaks), like a pill or mention chip
-  extraWidth?: number // Caller-owned horizontal chrome, e.g. padding + border width
-}
-
-export type PreparedInlineFlow = {
-  readonly [preparedInlineFlowBrand]: true
-}
-
-export type InlineFlowCursor = {
-  itemIndex: number
-  segmentIndex: number
-  graphemeIndex: number
-}
-
-export type InlineFlowFragment = {
-  itemIndex: number // Index into the original InlineFlowItem array
-  text: string // Text slice for this fragment
-  gapBefore: number // Collapsed inter-item gap paid before this fragment on this line
-  occupiedWidth: number // Text width plus the item's extraWidth contribution
-  start: LayoutCursor // Start cursor within the item's prepared text
-  end: LayoutCursor // End cursor within the item's prepared text
-}
+export type { InlineFlowItem, PreparedInlineFlow, InlineFlowCursor, InlineFlowFragment, InlineFlowLine }
 
 export type InlineFlowFragmentRange = {
   itemIndex: number // Index into the original InlineFlowItem array
@@ -68,12 +49,6 @@ export type InlineFlowFragmentRange = {
   occupiedWidth: number // Text width plus the item's extraWidth contribution
   start: LayoutCursor // Start cursor within the item's prepared text
   end: LayoutCursor // End cursor within the item's prepared text
-}
-
-export type InlineFlowLine = {
-  fragments: InlineFlowFragment[]
-  width: number
-  end: InlineFlowCursor
 }
 
 export type InlineFlowLineRange = {
