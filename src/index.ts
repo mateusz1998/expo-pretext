@@ -53,5 +53,9 @@ export type {
 // --- Streaming ---
 export { prepareStreaming, clearStreamingState } from './streaming'
 
+// --- Text Utilities ---
+export { fitFontSize, truncateText } from './text-utils'
+export type { TruncationResult } from './text-utils'
+
 // --- Utilities ---
 export { clearCache, setLocale } from './layout'
