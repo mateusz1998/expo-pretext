@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.5.0 — 2026-04-09
+
+### Added
+
+- **Expo Web support** — Canvas + Intl.Segmenter measurement backend. All existing hooks and functions work on web with zero API changes. `Platform.OS === 'web'` auto-detected.
+- Web example app configuration (`app.json` platforms, `react-native-web`, `react-dom`)
+
+### How it works on web
+
+- `prepare()` uses `CanvasRenderingContext2D.measureText()` for segment widths
+- `Intl.Segmenter` for word/grapheme boundaries (locale-aware for CJK/Thai)
+- `layout()` runs pure JS arithmetic (same as native)
+- All hooks (`useTextHeight`, `useFlashListHeights`, `useStreamingLayout`) work unchanged
+- LRU cache (5000 entries) for measured widths
+- `OffscreenCanvas` preferred, DOM canvas fallback, SSR graceful degradation
+- `react-native-web` added as optional peer dependency
+
+### Tests
+
+- 245 automated tests (was 230)
+- Web backend: interface shape, empty text, Intl.Segmenter, fallbacks
+
 ## 0.4.0 — 2026-04-09
 
 ### Added

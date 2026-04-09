@@ -6,7 +6,8 @@
   "scripts": {
     "start": "expo start",
     "ios": "expo run:ios",
-    "android": "expo run:android"
+    "android": "expo run:android",
+    "web": "expo start --web"
   },
   "dependencies": {
     "@shopify/flash-list": "^2.3.1",
@@ -18,7 +19,9 @@
     "expo-router": "~5.0.0",
     "expo-status-bar": "~2.2.0",
     "react": "19.0.0",
+    "react-dom": "19.0.0",
     "react-native": "0.79.6",
+    "react-native-web": "~0.19.13",
     "react-native-safe-area-context": "~5.4.0",
     "react-native-screens": "~4.11.0"
   },

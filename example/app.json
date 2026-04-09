@@ -4,7 +4,10 @@
     "slug": "expo-pretext-example",
     "version": "1.0.0",
     "scheme": "expo-pretext-example",
-    "platforms": ["ios", "android"],
+    "platforms": ["ios", "android", "web"],
+    "web": {
+      "bundler": "metro"
+    },
     "ios": {
       "bundleIdentifier": "dev.jubakitiashvili.expopretext.example"
     },
