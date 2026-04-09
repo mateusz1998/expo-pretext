@@ -189,6 +189,11 @@ export function prepare(
     profile,
     options?.whiteSpace,
   )
+  if (options?.customBreakRules) {
+    for (let i = 0; i < analysis.kinds.length; i++) {
+      analysis.kinds[i] = options.customBreakRules(analysis.texts[i]!, i, analysis.kinds[i]!)
+    }
+  }
   const widthMap = buildWidthMap(result)
   return buildPreparedText(analysis, widthMap, style, toLayoutOptions(options))
 }
@@ -212,6 +217,11 @@ export function prepareWithSegments(
     profile,
     options?.whiteSpace,
   )
+  if (options?.customBreakRules) {
+    for (let i = 0; i < analysis.kinds.length; i++) {
+      analysis.kinds[i] = options.customBreakRules(analysis.texts[i]!, i, analysis.kinds[i]!)
+    }
+  }
   const widthMap = buildWidthMap(result)
   return buildPreparedTextWithSegments(analysis, widthMap, style, toLayoutOptions(options))
 }

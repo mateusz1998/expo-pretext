@@ -5,6 +5,7 @@
 // --- Types ---
 export type {
   TextStyle,
+  SegmentBreakKind,
   PrepareOptions,
   PreparedText,
   PreparedTextWithSegments,
@@ -25,6 +26,7 @@ export { useTextHeight } from './hooks/useTextHeight'
 export { usePreparedText } from './hooks/usePreparedText'
 export { useFlashListHeights } from './hooks/useFlashListHeights'
 export { useStreamingLayout } from './hooks/useStreamingLayout'
+export { useMultiStreamLayout } from './hooks/useMultiStreamLayout'
 export { measureHeights, measureTokenWidth } from './prepare'
 
 // --- Core API ---

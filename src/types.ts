@@ -13,10 +13,21 @@ export type TextStyle = {
 
 export type WhiteSpaceMode = 'normal' | 'pre-wrap'
 
+export type SegmentBreakKind =
+  | 'text'
+  | 'space'
+  | 'preserved-space'
+  | 'tab'
+  | 'glue'
+  | 'zero-width-break'
+  | 'soft-hyphen'
+  | 'hard-break'
+
 export type PrepareOptions = {
   whiteSpace?: WhiteSpaceMode
   locale?: string
   accuracy?: 'fast' | 'exact'
+  customBreakRules?: (segment: string, index: number, kind: SegmentBreakKind) => SegmentBreakKind
 }
 
 export type LayoutResult = {
