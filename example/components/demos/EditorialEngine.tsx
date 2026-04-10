@@ -1,9 +1,9 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { View, Text, StyleSheet, useWindowDimensions, Animated, PanResponder } from 'react-native'
 import {
-  prepareWithSegments,
-  layoutColumn,
+  useObstacleLayout,
   type CircleObstacle,
+  type RectObstacle,
 } from 'expo-pretext'
 
 const bodyStyle = { fontFamily: 'Georgia', fontSize: 16, lineHeight: 26 }
@@ -92,23 +92,23 @@ export function EditorialEngineDemo() {
   const PQ_H = LH * 7
   const PQ_TEXT = '\u201CThe performance improvement is not incremental \u2014 it is categorical. 0.05ms versus 30ms. Zero reflows versus five hundred.\u201D'
 
-  const lines = useMemo(() => {
-    const prepared = prepareWithSegments(bodyText, bodyStyle)
-    const bodyH = stageH - bodyTop - pad
-    const circleObs: CircleObstacle[] = orbs.map(o => ({
-      cx: o.x, cy: o.y, r: o.r, hPad: 12, vPad: 4,
-    }))
-    const rectObs = [
-      { x: 0, y: 0, w: DROP_CAP_W, h: DROP_CAP_H },
-      { x: PQ_X - 8, y: PQ_Y - 4, w: PQ_W + 8, h: PQ_H + 8 },
-    ]
-    return layoutColumn(
-      prepared,
-      { segmentIndex: 0, graphemeIndex: 0 },
-      { x: 0, y: 0, width: innerW, height: bodyH },
-      LH, circleObs, rectObs,
-    ).lines
-  }, [orbs, innerW, stageH, bodyTop, PQ_X, PQ_Y])
+  const circleObstacles = useMemo<CircleObstacle[]>(() => orbs.map(o => ({
+    cx: o.x, cy: o.y, r: o.r, hPad: 12, vPad: 4,
+  })), [orbs])
+
+  const rectObstacles = useMemo<RectObstacle[]>(() => [
+    { x: 0, y: 0, w: DROP_CAP_W, h: DROP_CAP_H },
+    { x: PQ_X - 8, y: PQ_Y - 4, w: PQ_W + 8, h: PQ_H + 8 },
+  ], [DROP_CAP_W, DROP_CAP_H, PQ_X, PQ_Y, PQ_W, PQ_H])
+
+  const bodyH = stageH - bodyTop - pad
+  const { lines } = useObstacleLayout(
+    bodyText,
+    bodyStyle,
+    { x: 0, y: 0, width: innerW, height: bodyH },
+    circleObstacles,
+    rectObstacles,
+  )
 
   return (
     <View style={styles.outerContainer}>
