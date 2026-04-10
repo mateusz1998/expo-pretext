@@ -84,6 +84,10 @@ export type { CollapsibleHeightResult } from './hooks/useCollapsibleHeight'
 export { usePinchToZoomText } from './hooks/usePinchToZoomText'
 export type { PinchToZoomResult } from './hooks/usePinchToZoomText'
 
+// --- Engine Profile ---
+export { getEngineProfile, setEngineProfile, ENGINE_PROFILES } from './engine-profile'
+export type { EngineProfile } from './engine-profile'
+
 // --- Accessibility ---
 export { getFontScale, onFontScaleChange, clearAllCaches } from './accessibility'
 
