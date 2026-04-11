@@ -15,6 +15,12 @@ import { TypewriterDemo } from '../../components/demos/Typewriter'
 import { TextMorphingDemo } from '../../components/demos/TextMorphing'
 import { PinchToZoomDemo } from '../../components/demos/PinchToZoom'
 import { CollapsibleDemo } from '../../components/demos/Collapsible'
+import { RichInlineDemo } from '../../components/demos/RichInline'
+import { TextClockDemo } from '../../components/demos/TextClock'
+import { UmbrellaReflowDemo } from '../../components/demos/UmbrellaReflow'
+import { PhysicsTodoDemo } from '../../components/demos/PhysicsTodo'
+import { BreakoutTextDemo } from '../../components/demos/BreakoutText'
+import { TextPathDemo } from '../../components/demos/TextPath'
 
 const demos = [
   {
@@ -112,6 +118,54 @@ const demos = [
     level: 'Beginner',
     desc: 'Expand/collapse with pre-computed heights and smooth Reanimated animation',
     component: CollapsibleDemo,
+  },
+  {
+    id: 'rich-inline',
+    title: 'Rich Inline Flow',
+    api: 'prepareInlineFlow() + walkInlineFlowLines()',
+    level: 'Advanced',
+    desc: 'Mentions, code spans, bold runs — atomic pills stay whole during wraps',
+    component: RichInlineDemo,
+  },
+  {
+    id: 'text-clock',
+    title: 'Text Clock',
+    api: 'prepare() + layout()',
+    level: 'Beginner',
+    desc: 'Real-time clock with remeasurement every tick — fluent number transitions',
+    component: TextClockDemo,
+  },
+  {
+    id: 'umbrella',
+    title: 'Umbrella Reflow',
+    api: 'layoutColumn() + RectObstacle',
+    level: 'Intermediate',
+    desc: 'Drag the umbrella — text reflows around it in pure arithmetic',
+    component: UmbrellaReflowDemo,
+  },
+  {
+    id: 'physics-todo',
+    title: 'Physics Todo',
+    api: 'measureNaturalWidth()',
+    level: 'Intermediate',
+    desc: 'Bouncing todo items — real text widths drive collision detection',
+    component: PhysicsTodoDemo,
+  },
+  {
+    id: 'breakout',
+    title: 'Breakout Text',
+    api: 'measureNaturalWidth()',
+    level: 'Advanced',
+    desc: 'Text bricks sized to their labels — drag to move paddle, break every word',
+    component: BreakoutTextDemo,
+  },
+  {
+    id: 'text-path',
+    title: 'Text Path',
+    api: 'measureNaturalWidth() per character',
+    level: 'Advanced',
+    desc: 'Characters flowing along a sine wave — precise per-glyph positioning',
+    component: TextPathDemo,
   },
 ]
 
