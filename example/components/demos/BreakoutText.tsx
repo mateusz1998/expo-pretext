@@ -572,7 +572,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Menlo',
     fontSize: 10,
     lineHeight: PROSE_LH,
-    color: 'rgba(120, 170, 130, 0.32)',
+    color: 'rgba(150, 210, 165, 0.7)',
     overflow: 'hidden',
   },
   brickText: {
