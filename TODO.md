@@ -25,98 +25,75 @@
 
 ---
 
-## Tier 1: AI Chat Experience — v0.6.1–v0.6.2
+## ~~Tier 1: AI Chat Experience — v0.6.1–v0.6.2 (DONE)~~ ✅
 
-> Primary use case. AI chat apps need these immediately.
+- [x] Upstream JS triage (#120, #121, #119, #105) — 4 upstream issues checked, none reproducible
+- [x] **Typewriter effect** — `useTypewriterLayout` hook + `buildTypewriterFrames`
+- [x] **Code block syntax-aware height** — `measureCodeBlockHeight` utility
 
-### v0.6.1 — Upstream JS triage + Typewriter effect
+## ~~Tier 2: Flagship Demos — v0.6.3–v0.7.0 (DONE)~~ ✅
 
-- [ ] Triage upstream #120 (rich-inline CJK overflow) — check if exists in our `rich-inline.ts`
-- [ ] Triage upstream #121 (layoutNextLine mismatch) — check against our `layout.ts`
-- [ ] Triage upstream #119 (skip no-op merges) — check against our `analysis.ts`
-- [ ] Triage upstream #105 (currency symbol line-break) — check against our `analysis.ts`
-- [ ] **Typewriter effect** — `useTypewriterLayout` hook. Token-by-token reveal with pre-calculated line wrapping. Extends `useStreamingLayout` + `layoutWithLines()`.
+- [x] **useObstacleLayout hook** — Editorial Engine pattern promoted to hook
+- [x] **Text morphing** — `useTextMorphing` + `buildTextMorph`
+- [x] **useAnimatedTextHeight** — Reanimated SharedValue integration
+- [x] **Collapsible sections** — `useCollapsibleHeight` with pre-computed expanded/collapsed
+- [x] **Pinch-to-zoom text** — `usePinchToZoomText` + `computeZoomLayout`
+- [x] v0.7.0 milestone: Animation & AI Suite complete
 
-### v0.6.2 — Code block height prediction
+## ~~Tier 3: Production Readiness — v0.7.1–v0.7.3 (DONE)~~ ✅
 
-- [ ] **Code block syntax-aware height** — `measureCodeBlockHeight()` utility. Monospace font + `whiteSpace: 'pre-wrap'` + optional language-aware break rules. First: investigate if `prepare()` with monospace style already works.
+- [x] **Dynamic Type / Accessibility** — `getFontScale`, `onFontScaleChange`, `clearAllCaches`
+- [x] **iOS/Android reconciliation** — `ENGINE_PROFILES`, `setEngineProfile`, consistent mode
+- [x] **Font metrics API** — `getFontMetrics` with iOS UIFont + Android Paint.FontMetrics + Web Canvas
 
----
+## ~~Tier 4: DX & Developer Tools — v0.7.4 (DONE)~~ ✅
 
-## Tier 2: Flagship Demos — v0.6.3–v0.6.5 → v0.7.0
+- [x] **Debug overlay** — `<PretextDebugOverlay>` + `compareDebugMeasurement`
+- [x] **Snapshot testing** — `buildHeightSnapshot` + `compareHeightSnapshots` for CI
+- [x] **Performance budget** — `prepareWithBudget` + `PrepareBudgetTracker`
+- [x] v0.8.0 milestone: Production Ready
 
-> Community demand. Wow factor and adoption drivers.
+## ~~Tier 5: Engine Optimization — v0.8.1 (DONE)~~ ✅
 
-### v0.6.3 — useObstacleLayout hook + Text morphing
-
-- [ ] **useObstacleLayout hook** — Promote `layoutColumn()` to React hook with memoization + optional Gesture Handler drag. `layoutColumn()` is 100% functional (193 lines), hook wraps it.
-- [ ] **Text morphing** — `useTextMorphing` hook. Animate line-by-line from "Thinking..." to final response. Uses `layoutWithLines()` for both states, interpolates between line sets.
-
-### v0.6.4 — useAnimatedTextHeight + Collapsible sections
-
-- [ ] **useAnimatedTextHeight** — Reanimated `SharedValue<number>` wrapping `layout()`. Smooth height transitions. New optional peer dep: `react-native-reanimated`.
-- [ ] **Collapsible sections** — `useCollapsibleHeight` hook. Pre-compute expanded + collapsed heights, animate between with Reanimated.
-
-### v0.6.5 — Pinch-to-zoom text
-
-- [ ] **Pinch-to-zoom text** — `usePinchToZoomText` hook. fontSize changes per gesture frame. layout() at 0.0002ms = 120+ layouts per frame. First on React Native (web equivalent `pinch-type` has 104 stars).
-
-### v0.7.0 — Animation & AI Suite Release
-
-- [ ] Version bump, README update, CHANGELOG, demo app updates
+- [x] **prepare() batch throughput** — measureHeights pre-warm, flushPending dedup, getAnalysisProfile hoist
 
 ---
 
-## Tier 3: Production Readiness — v0.7.1–v0.7.3
+## Deferred (wait for user feedback before implementing)
 
-> Real-world app requirements for App Store / Play Store shipping.
+These were originally in Tier 5 but deferred — the current implementation is
+good enough for typical use cases, and real-world impact is unproven.
 
-### v0.7.1 — Dynamic Type / Accessibility
-
-- [ ] **Dynamic Type / Accessibility** — `PixelRatio.getFontScale()` listener + `clearCache()` + auto re-prepare. WCAG compliance. `pretext-a11y` exists in ecosystem.
-
-### v0.7.2 — iOS/Android reconciliation + native investigation
-
-- [ ] **iOS/Android reconciliation** — consistent-height mode across platforms. Merges: Android `TextPaint.breakText()` investigation + iOS `NSLayoutManager` tradeoffs. Goal: cross-platform normalization via `engine-profile.ts`.
-
-### v0.7.3 — Font metrics API
-
-- [ ] **Font metrics API** — ascender, descender, x-height, cap-height from native (iOS UIFont + Android Paint.FontMetrics). Web fallback via Canvas `measureText()`.
+- [ ] **Hermes Intl.Segmenter C++ fallback** — only affects ZWJ emoji edge cases; current spread-operator fallback works for 99% of cases. Reconsider if users report emoji rendering issues.
+- [ ] **iPad split-screen / foldable optimization** — `layout()` is already 0.0002ms; batch re-layout on Dimensions change is a convenience hook, not a performance necessity. Reconsider if users report slow width transitions.
 
 ---
 
-## Tier 4: DX & Optimization — v0.7.4 → v0.8.0
+## Follow-up work (post-v0.8.x)
 
-> Developer experience for adopters.
+### Demo app enhancements
 
-### v0.7.4 — Developer tools
+- [ ] Typewriter demo using `useTypewriterLayout`
+- [ ] Text morphing demo ("Thinking..." → response transition)
+- [ ] Pinch-to-zoom demo using `usePinchToZoomText`
+- [ ] Accessibility demo with `onFontScaleChange`
+- [ ] Debug overlay demo showing predicted vs actual
+- [ ] Snapshot testing example in CI
 
-- [ ] **Debug overlay** — `<PretextDebugOverlay>` showing predicted vs actual heights, cache hit/miss, timing
-- [ ] **Snapshot testing** — `expectHeightSnapshot(texts, style, width)` for CI regression detection
-- [ ] **Performance budget** — `prepare(text, style, { budgetMs: 5 })` — estimate fallback if native exceeds budget
+### Documentation
 
-### v0.8.0 — Production Ready Release
+- [ ] Dedicated docs site (inspired by pretextjs.dev)
+- [ ] Migration guide from v0.6 → v0.8
+- [ ] API reference with all 22+ public exports
+- [ ] Performance benchmarks page
+- [ ] Ecosystem page (companion packages, community demos)
 
-- [ ] Full audit, version bump, documentation update
+### Ecosystem
 
----
-
-## Tier 5: Engine Optimization — v0.8.x
-
-- [ ] Profile and optimize `prepare()` batch throughput (native-bound, 15ms/500 texts)
-- [ ] Hermes `Intl.Segmenter` — lightweight C++ fallback if spread-operator grapheme splitting bottlenecks
-- [ ] iPad split-screen / foldable — optimized relayout batch on frequent width changes
-
----
-
-## Excluded (application-layer, not library)
-
-- ~~Object detection labels~~ — ML model integration, not text layout
-- ~~Live translation overlay~~ — OCR + translation, not text layout
-- ~~AR text annotations~~ — 3D scene management, not text layout
-- ~~AI live video analysis~~ — video processing, not text layout
-- ~~Smart subtitle positioning~~ — face detection is external; obstacle layout already supports rect obstacles
-- ~~Text-around-video~~ — niche; obstacle layout already handles rect obstacles
+- [ ] Companion package: `expo-pretext-markdown` (extracted from example/components/MarkdownRenderer)
+- [ ] Companion package: `expo-pretext-flashlist` (FlashList-specific helpers)
+- [ ] Blog post / announcement about v0.8.0 production release
+- [ ] Submit to awesome-react-native
 
 ---
 
@@ -129,16 +106,19 @@
 - Keep layout() allocation-light. prepare() is the bottleneck.
 - Never blindly port upstream web fixes — our native backends differ fundamentally.
 - Each task: analyze code → implement → audit → test → verify → commit → next.
+- Every version: git push + npm publish. Never leave local-only.
+- Every task: full test suite + integration tests. Never unit tests alone.
 
 ## Not worth doing
 
-- Full markdown renderer in core
+- Full markdown renderer in core (extract to companion package instead)
 - Measurement in layout()
 - Font loading/management (expo-font's job)
 - Text rendering (RN Text's job)
 - Cache tuning knobs in public API
 - Pixel-perfect accuracy as product claim
 - onLayout fallback reconciliation
+- Camera/AR/ML integration (application-layer, not library concern)
 
 ## Open design questions
 
