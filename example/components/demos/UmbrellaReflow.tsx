@@ -186,45 +186,147 @@ export function UmbrellaReflowDemo() {
           </Text>
         ))}
 
-        {/* Umbrella canopy (ellipse via border-radius trick) */}
-        <View
-          pointerEvents="none"
-          style={{
-            position: 'absolute',
-            left: umbrella.cx - umbrella.rx,
-            top: umbrella.cy - umbrella.ry,
-            width: umbrella.rx * 2,
-            height: umbrella.ry * 2,
-            borderTopLeftRadius: umbrella.rx,
-            borderTopRightRadius: umbrella.rx,
-            borderBottomLeftRadius: umbrella.rx * 0.2,
-            borderBottomRightRadius: umbrella.rx * 0.2,
-            backgroundColor: '#f5f5f5',
-            overflow: 'hidden',
-          }}
-        >
-          {/* canopy shading */}
-          <View style={{
-            position: 'absolute',
-            left: 0, right: 0, bottom: 0, height: 12,
-            backgroundColor: 'rgba(0,0,0,0.12)',
-          }} />
-        </View>
+        {/* Pretty umbrella — multi-layered render */}
+        {(() => {
+          const { cx, cy, rx, ry, handleH } = umbrella
+          const panelCount = 5
+          const panelW = (rx * 2) / panelCount
+          return (
+            <View pointerEvents="none" style={{ position: 'absolute', left: 0, top: 0, right: 0, bottom: 0 }}>
+              {/* Soft shadow halo behind the umbrella */}
+              <View style={{
+                position: 'absolute',
+                left: cx - rx - 4,
+                top: cy - ry - 2,
+                width: rx * 2 + 8,
+                height: ry + 6,
+                borderTopLeftRadius: rx + 4,
+                borderTopRightRadius: rx + 4,
+                backgroundColor: '#000',
+                shadowColor: '#fff',
+                shadowOpacity: 0.15,
+                shadowRadius: 16,
+                shadowOffset: { width: 0, height: 4 },
+              }} />
 
-        {/* Umbrella handle */}
-        <View
-          pointerEvents="none"
-          style={{
-            position: 'absolute',
-            left: umbrella.cx - umbrella.handleW / 2,
-            top: umbrella.cy,
-            width: umbrella.handleW,
-            height: umbrella.handleH,
-            backgroundColor: '#e0e0e0',
-            borderBottomLeftRadius: umbrella.handleW,
-            borderBottomRightRadius: umbrella.handleW,
-          }}
-        />
+              {/* Main canopy — half ellipse */}
+              <View style={{
+                position: 'absolute',
+                left: cx - rx,
+                top: cy - ry,
+                width: rx * 2,
+                height: ry,
+                borderTopLeftRadius: rx,
+                borderTopRightRadius: rx,
+                backgroundColor: '#f5f5f7',
+                overflow: 'hidden',
+              }}>
+                {/* Top-light highlight gradient (simulated with inner glow) */}
+                <View style={{
+                  position: 'absolute',
+                  left: rx * 0.3,
+                  top: 2,
+                  width: rx * 0.5,
+                  height: ry * 0.35,
+                  borderRadius: rx * 0.5,
+                  backgroundColor: 'rgba(255,255,255,0.5)',
+                }} />
+
+                {/* Panel seam lines — 4 interior dividers, curving from knob to bottom */}
+                {Array.from({ length: panelCount - 1 }, (_, i) => {
+                  const t = (i + 1) / panelCount
+                  const seamX = t * rx * 2
+                  return (
+                    <View key={i} style={{
+                      position: 'absolute',
+                      left: seamX - 0.5,
+                      top: 0,
+                      bottom: 0,
+                      width: 1,
+                      backgroundColor: 'rgba(0,0,0,0.14)',
+                    }} />
+                  )
+                })}
+
+                {/* Bottom inner shadow for depth */}
+                <View style={{
+                  position: 'absolute',
+                  left: 0, right: 0, bottom: 0, height: 6,
+                  backgroundColor: 'rgba(0,0,0,0.18)',
+                }} />
+              </View>
+
+              {/* Top knob */}
+              <View style={{
+                position: 'absolute',
+                left: cx - 4,
+                top: cy - ry - 5,
+                width: 8,
+                height: 8,
+                borderRadius: 4,
+                backgroundColor: '#d0d0d3',
+                borderWidth: 1,
+                borderColor: '#a0a0a3',
+              }} />
+
+              {/* Scalloped panel tips — small downward triangles at each panel seam */}
+              {Array.from({ length: panelCount }, (_, i) => {
+                const tipX = cx - rx + (i + 0.5) * panelW
+                return (
+                  <View key={`tip${i}`} style={{
+                    position: 'absolute',
+                    left: tipX - 6,
+                    top: cy - 1,
+                    width: 12,
+                    height: 8,
+                    borderTopLeftRadius: 6,
+                    borderTopRightRadius: 6,
+                    borderBottomLeftRadius: 10,
+                    borderBottomRightRadius: 10,
+                    backgroundColor: '#e8e8eb',
+                    transform: [{ scaleY: -1 }],
+                  }} />
+                )
+              })}
+
+              {/* Handle rod */}
+              <View style={{
+                position: 'absolute',
+                left: cx - 1.5,
+                top: cy,
+                width: 3,
+                height: handleH - 16,
+                backgroundColor: '#c8a878',
+                borderRadius: 1.5,
+              }} />
+
+              {/* Handle rod darker stripe (wood grain hint) */}
+              <View style={{
+                position: 'absolute',
+                left: cx,
+                top: cy,
+                width: 1,
+                height: handleH - 16,
+                backgroundColor: 'rgba(0,0,0,0.25)',
+              }} />
+
+              {/* Curved hook (J shape) at bottom of handle */}
+              <View style={{
+                position: 'absolute',
+                left: cx - 14,
+                top: cy + handleH - 24,
+                width: 16,
+                height: 16,
+                borderWidth: 3,
+                borderTopColor: 'transparent',
+                borderRightColor: 'transparent',
+                borderBottomColor: '#c8a878',
+                borderLeftColor: '#c8a878',
+                borderBottomLeftRadius: 14,
+              }} />
+            </View>
+          )
+        })()}
       </View>
       <Text style={styles.info}>measureNaturalWidth() · drag the umbrella — digital rain casts into its shadow</Text>
     </View>
