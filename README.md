@@ -1,10 +1,10 @@
 # expo-pretext
 
-DOM-free multiline text height prediction for React Native. Port of [Pretext](https://github.com/chenglou/pretext).
+**The text layout primitive React Native was missing.** Native measurement, ~0.0002ms pure-JS layout arithmetic, and full control over how text flows — around shapes, inside gestures, through animations. All with regular `<View>` and `<Text>`. No Skia canvas, no SVG tricks.
 
-Predict text heights **before rendering** — no `onLayout`, no layout jumps, no guesswork. Works with FlashList, streaming AI chat, typewriter effects, text-around-obstacles layouts, pinch-to-zoom, Dynamic Type, and any layout that needs text dimensions upfront.
-
-**Production-ready** — 386 tests, native TextKit / TextPaint measurement, full animation suite, accessibility (Dynamic Type), cross-platform consistency, and developer tools.
+[![npm](https://img.shields.io/npm/v/expo-pretext.svg)](https://www.npmjs.com/package/expo-pretext)
+[![license](https://img.shields.io/npm/l/expo-pretext.svg)](./LICENSE)
+[![tests](https://img.shields.io/badge/tests-386%20passing-brightgreen.svg)](./src/__tests__)
 
 <p align="center">
   <img src="https://github.com/JubaKitiashvili/expo-pretext/raw/main/assets/demos/hero.gif" width="720" alt="expo-pretext demo reel" />
@@ -14,20 +14,52 @@ Predict text heights **before rendering** — no `onLayout`, no layout jumps, no
   <img src="https://github.com/JubaKitiashvili/expo-pretext/raw/main/assets/demos/hero-reel.gif" width="720" alt="expo-pretext creative demos reel" />
 </p>
 
-## Installation
+---
+
+## What React Native couldn't do before
+
+Flexbox is rectangular boxes all the way down. iOS TextKit has `NSTextContainer.exclusionPaths`. CSS has `shape-outside`. The native capability exists on every platform — React Native just never exposed it. Even `react-native-skia`'s `Paragraph` API is rectangle-only ([open issue since 2022](https://github.com/Shopify/react-native-skia/issues/968)).
+
+expo-pretext closes that gap:
+
+- **Text reflow around arbitrary shapes** — circles, rectangles, or any polygon. Magazine-style layouts, circular avatars with wrapping captions, text that reacts to moving obstacles.
+- **Exact heights before render** — FlashList virtualization with zero `onLayout` jumps, even for 10k messages with rich markdown.
+- **Per-frame layout recomputation** — `layout()` runs in ~0.0002ms, fast enough to run 120+ times per frame during gestures, physics, or animations.
+- **Streaming AI chat** — cache-aware incremental measurement for token-by-token reveals.
+- **Regular RN rendering tree** — A11y, Dynamic Type, selection, copy/paste, VoiceOver, RTL, emoji ZWJ — all work, because you're still using `<Text>`.
+
+## Why it's fast
+
+```
+prepare(text, style)         One native measurement call per text
+  → Native:  iOS TextKit / Android TextPaint / Web Canvas
+  → Returns: cached segment widths + break opportunities
+  → Time:    ~15ms for 500 texts in a batch
+
+layout(prepared, maxWidth)   Pure JS arithmetic on cached data
+  → No native bridge, no DOM, no reflow
+  → Time:    ~0.0002ms per text
+  → Safe to call 120+ times per frame
+```
+
+The flagship demo is a [Breakout arcade game](./example/components/demos/BreakoutText.tsx) where the live prose background reflows around the ball, the paddle, and every falling brick at 60fps. It exists to prove the performance claim visually, not just in a benchmark.
+
+## Install
 
 ```sh
 npx expo install expo-pretext
 ```
 
-> Requires Expo SDK 52+ with a development build. Expo Go falls back to JS estimates.
+Requires Expo SDK 52+, React Native 0.76+, New Architecture / Fabric. Reanimated is an optional peer dependency used only by the animation hooks. Expo Go falls back to JS estimates — use a development build for native measurement.
 
-## Quick Start
+## Quick start
+
+### Text height before render
 
 ```tsx
 import { useTextHeight } from 'expo-pretext'
 
-function ChatBubble({ text }) {
+function ChatBubble({ text, maxWidth }) {
   const height = useTextHeight(text, {
     fontFamily: 'Inter',
     fontSize: 16,
@@ -38,17 +70,18 @@ function ChatBubble({ text }) {
 }
 ```
 
-## FlashList Integration
+### FlashList with exact heights
 
 ```tsx
 import { useFlashListHeights } from 'expo-pretext'
+import { FlashList } from '@shopify/flash-list'
 
-function ChatScreen() {
+function ChatScreen({ messages }) {
   const { estimatedItemSize, overrideItemLayout } = useFlashListHeights(
     messages,
     msg => msg.text,
     { fontFamily: 'Inter', fontSize: 16, lineHeight: 24 },
-    containerWidth
+    containerWidth,
   )
 
   return (
@@ -62,177 +95,126 @@ function ChatScreen() {
 }
 ```
 
-## Streaming AI Chat
+### Text reflow around a shape
 
 ```tsx
-function StreamingMessage({ text }) {
-  // Automatically detects append pattern, uses incremental measurement
-  // Native cache means most segments are instant cache hits
-  const height = useTextHeight(text, style, maxWidth)
-  return <View style={{ minHeight: height }}><Text>{text}</Text></View>
+import { useObstacleLayout } from 'expo-pretext'
+
+function MagazineLayout({ text, width }) {
+  const layout = useObstacleLayout(
+    text,
+    { fontFamily: 'Georgia', fontSize: 18, lineHeight: 28 },
+    { x: 0, y: 0, width, height: 600 },
+    // circular avatar to flow around
+    [{ cx: 80, cy: 80, r: 64 }],
+  )
+
+  return (
+    <View style={{ height: layout.height }}>
+      {layout.lines.map((line, i) => (
+        <Text key={i} style={{ position: 'absolute', left: line.x, top: line.y }}>
+          {line.text}
+        </Text>
+      ))}
+      <Image source={avatar} style={{ position: 'absolute', width: 128, height: 128, borderRadius: 64 }} />
+    </View>
+  )
 }
 ```
 
-## Batch Measurement
+### Streaming AI chat with incremental measurement
 
 ```tsx
-import { measureHeights } from 'expo-pretext'
+import { useStreamingLayout } from 'expo-pretext'
 
-// One native call for all texts
-const heights = measureHeights(
-  ['Hello world', 'Longer paragraph...', '短い文'],
-  { fontFamily: 'Inter', fontSize: 16, lineHeight: 24 },
-  320
-)
-```
-
-## API Reference
-
-### Simple API
-
-| Function | Description |
-|---|---|
-| `useTextHeight(text, style, maxWidth)` | Returns height as number. Auto-optimizes for streaming. |
-| `useFlashListHeights(data, getText, style, maxWidth)` | Returns `{ estimatedItemSize, overrideItemLayout }` for FlashList. |
-| `usePreparedText(text, style)` | Returns PreparedText handle for manual layout. |
-| `measureHeights(texts, style, maxWidth)` | Batch: texts in, heights out. |
-
-### AI Chat & Streaming API
-
-| Function | Description |
-|---|---|
-| `useStreamingLayout(text, style, maxWidth)` | Returns `{ height, lineCount, lastLineWidth, doesNextTokenWrap }`. |
-| `useMultiStreamLayout(streams, style, maxWidth)` | Multiple parallel AI streaming responses with independent tracking. |
-| `useTypewriterLayout(text, style, maxWidth)` | Token-by-token reveal with `advance()`, `reset()`, `seekTo()`. |
-| `useTextMorphing(fromText, toText, style, maxWidth)` | Line-by-line transition from "Thinking..." to final response. |
-| `prepareStreaming(key, text, style, options?)` | Low-level: optimized prepare for growing text. |
-| `clearStreamingState(key)` | Clean up streaming state when conversation resets. |
-| `measureCodeBlockHeight(code, style, maxWidth)` | Monospace code block height with `pre-wrap` whitespace. |
-
-### Animation API (requires react-native-reanimated)
-
-| Function | Description |
-|---|---|
-| `useAnimatedTextHeight(text, style, maxWidth, animConfig?)` | Reanimated SharedValue height with timing/spring animation. |
-| `useCollapsibleHeight(expanded, collapsed, style, maxWidth, isExpanded)` | Pre-computed expand/collapse heights with smooth animation. |
-| `usePinchToZoomText(text, style, maxWidth, options?)` | Per-frame fontSize scaling via pinch gesture. 120+ layouts/frame. |
-| `computeZoomLayout(text, style, maxWidth, scale, options?)` | Pure computation: fontSize/height at any zoom scale. |
-
-### Power API (Pretext-compatible)
-
-| Function | Description |
-|---|---|
-| `prepare(text, style, options?)` | One-time measurement. Returns opaque PreparedText. |
-| `layout(prepared, maxWidth)` | Pure arithmetic height calculation. ~0.0002ms. |
-| `prepareWithSegments(text, style, options?)` | Rich variant with segment data. |
-| `layoutWithLines(prepared, maxWidth)` | Returns `{ height, lineCount, lines }`. |
-| `layoutNextLine(prepared, start, maxWidth)` | Iterator for variable-width layouts. |
-| `walkLineRanges(prepared, maxWidth, onLine)` | Line walker without string materialization. |
-| `measureNaturalWidth(prepared)` | Intrinsic width (widest forced line). |
-
-### Rich Inline API
-
-| Function | Description |
-|---|---|
-| `prepareInlineFlow(items)` | Mixed fonts, @mention pills, chips. Returns opaque PreparedInlineFlow. |
-| `walkInlineFlowLines(prepared, maxWidth, onLine)` | Line walker for inline fragments. |
-| `measureInlineFlow(prepared, maxWidth)` | Total height for inline fragment stream. |
-
-### Obstacle Layout API
-
-| Function | Description |
-|---|---|
-| `useObstacleLayout(text, style, region, circles?, rects?)` | React hook for editorial text-around-obstacles at 60fps. |
-| `layoutColumn(prepared, start, region, lineHeight, circles?, rects?)` | Low-level: flow text in a column with obstacles. |
-| `carveTextLineSlots(base, blocked, minSlotWidth?)` | Compute available text slots by subtracting obstacles. |
-| `circleIntervalForBand(cx, cy, r, bandTop, bandBottom)` | Horizontal interval a circle occupies at a given line band. |
-| `rectIntervalForBand(rect, bandTop, bandBottom)` | Horizontal interval a rectangle occupies at a given line band. |
-
-### Text Utilities
-
-| Function | Description |
-|---|---|
-| `fitFontSize(text, style, boxWidth, boxHeight)` | Binary search for largest font size that fits in a box. |
-| `truncateText(text, style, maxWidth, maxLines)` | Truncate to N lines with ellipsis. |
-| `buildTypewriterFrames(lines, text, lineHeight)` | Pre-compute typewriter reveal frames from layout lines. |
-| `buildTextMorph(fromLines, toLines, lineHeight)` | Compute morph transition data between two text states. |
-
-### Types
-
-```ts
-type TextStyle = {
-  fontFamily: string
-  fontSize: number
-  lineHeight?: number
-  fontWeight?: '400' | '500' | '600' | '700' | 'bold' | 'normal'
-  fontStyle?: 'normal' | 'italic'
-}
-
-type PrepareOptions = {
-  whiteSpace?: 'normal' | 'pre-wrap'
-  locale?: string
-  accuracy?: 'fast' | 'exact'
-  customBreakRules?: (segment, index, kind) => SegmentBreakKind
+function StreamingBubble({ text, maxWidth }) {
+  // Auto-detects append pattern. Cache-aware. ~2ms per token.
+  const { height, lineCount, doesNextTokenWrap } = useStreamingLayout(text, style, maxWidth)
+  return (
+    <View style={{ minHeight: height }}>
+      <Text>{text}</Text>
+    </View>
+  )
 }
 ```
 
-### Utilities
+### Pinch-to-zoom text at 60fps
 
-```ts
-clearCache()              // Clear all measurement caches
-setLocale(locale?: string) // Set locale for text segmentation
+```tsx
+import { usePinchToZoomText } from 'expo-pretext/animated'
+import Animated from 'react-native-reanimated'
+
+function ZoomableText({ text, maxWidth }) {
+  const zoom = usePinchToZoomText(text, baseStyle, maxWidth, {
+    minFontSize: 8,
+    maxFontSize: 48,
+  })
+  // layout() runs per frame. 120+ recalculations/frame possible.
+  return <Animated.Text style={[baseStyle, zoom.animatedStyle]}>{text}</Animated.Text>
+}
 ```
 
-## How It Works
+## Feature tour
 
-```
-prepare(text, style)
-  → Native: segment text + measure widths (one call)
-  → JS: analyze segments, build PreparedText
-  → Cache everything for next time
+| Category | What you get |
+|---|---|
+| **Layout primitives** | `layoutColumn` (obstacles), `useObstacleLayout`, `fitFontSize`, `truncateText`, `customBreakRules`, `measureNaturalWidth` |
+| **Virtualization** | `useTextHeight`, `useFlashListHeights`, `measureHeights` (batch) |
+| **Streaming AI chat** | `useStreamingLayout`, `useMultiStreamLayout`, `prepareStreaming`, `measureCodeBlockHeight` |
+| **Animation (Reanimated)** | `useAnimatedTextHeight`, `useCollapsibleHeight`, `usePinchToZoomText`, `useTypewriterLayout`, `useTextMorphing` |
+| **Rich inline flow** | `prepareInlineFlow`, `walkInlineFlowLines`, `measureInlineFlow` — mixed fonts, @mentions, pills |
+| **Accessibility** | `getFontScale`, `onFontScaleChange`, `clearAllCaches` — Dynamic Type reactive |
+| **Cross-platform consistency** | `ENGINE_PROFILES`, `setEngineProfile`, `getEngineProfile` — iOS ≡ Android ≡ Web |
+| **Font metrics** | `getFontMetrics` — native `UIFont` / `Paint.FontMetrics` / Web Canvas fallback |
+| **Developer tools** | `<PretextDebugOverlay>`, `compareDebugMeasurement`, `buildHeightSnapshot`, `compareHeightSnapshots`, `prepareWithBudget`, `PrepareBudgetTracker` |
+| **Power API** | `prepare`, `layout`, `layoutWithLines`, `layoutNextLine`, `walkLineRanges`, `prepareWithSegments` |
 
-layout(prepared, maxWidth)
-  → Pure JS arithmetic on cached widths
-  → ~0.0002ms per text
-  → No native calls, no DOM, no layout reflow
-```
+See [`src/index.ts`](./src/index.ts) for the full public surface.
 
-### Performance
+## Internationalization
 
-- **prepare()**: ~15ms for 500 texts (batch)
-- **layout()**: ~0.0002ms per text (pure arithmetic)
-- **Streaming**: ~2ms per token (mostly cache hits)
-- **Native caching**: LRU 5000 segments/font, frequency-based eviction
-- **JS caching**: skip native calls entirely when all segments are cached
+Full Unicode via native OS segmenters. No locale hacks, no userland `Intl` polyfills, no manual script detection:
+
+- **CJK** (Chinese, Japanese, Korean) — per-character breaking with kinsoku rules
+- **Arabic, Hebrew** — RTL with bidi metadata
+- **Thai, Lao, Khmer, Myanmar** — dictionary-based word boundaries
+- **Georgian, Devanagari, Armenian, Ethiopic** — all native scripts
+- **Emoji** — compound graphemes, flag sequences, ZWJ family joiners
+- **Mixed scripts** in a single string, measured correctly
+
+## Performance
+
+| Operation | Cost |
+|---|---|
+| `prepare()` batch | ~15ms for 500 texts |
+| `layout()` per call | ~0.0002ms (pure arithmetic) |
+| Streaming token | ~2ms (mostly cache hits) |
+| Native cache | LRU 5000 segments/font, frequency-based eviction |
+| JS cache | Skip native calls entirely when all segments are cached |
 
 ## Accuracy
 
-expo-pretext uses native platform text measurement (iOS `NSString.size`, Android `TextPaint.measureText`) — the same engines that render your text. Two accuracy modes:
+expo-pretext uses native platform text measurement — the same engines that render your text. Two modes:
 
-- **`fast`** (default): Sum individual segment widths. Sub-pixel kerning differences absorbed by tolerance.
-- **`exact`**: Re-measure merged segments. Pixel-perfect at cost of one extra native call.
+- **`fast`** (default): sum individual segment widths. Sub-pixel kerning differences absorbed by tolerance.
+- **`exact`**: re-measure merged segments. Pixel-perfect at the cost of one extra native call.
 
-## i18n Support
+Cross-platform drift between iOS, Android, and Web is bounded by `ENGINE_PROFILES` — use `consistent` mode when you need identical layouts across all three.
 
-Full Unicode support via native OS segmenters:
-- CJK (Chinese, Japanese, Korean) — per-character breaking + kinsoku rules
-- Arabic, Hebrew — RTL with bidi metadata
-- Thai, Lao, Khmer, Myanmar — dictionary-based word boundaries
-- Georgian, Devanagari, and all other scripts
-- Emoji — compound graphemes, flags, ZWJ sequences
-- Mixed scripts in a single string
+## Platform support
 
-## Inspiration & Credits
+| Platform | Backend | Status |
+|---|---|---|
+| iOS | TextKit (`NSLayoutManager`, `NSAttributedString`, `CFStringTokenizer`) | New Architecture / Fabric verified |
+| Android | `TextPaint`, `BreakIterator`, `Paint.FontMetrics` | Kotlin native module |
+| Expo Web | `CanvasRenderingContext2D.measureText` + `Intl.Segmenter` | Zero API changes |
+| Expo Go | JS estimates (no native measurement) | Use a dev build for production |
 
-expo-pretext is a React Native / Expo port of [Pretext](https://github.com/chenglou/pretext) by Cheng Lou. The original Pretext is a web-based text measurement library — expo-pretext brings the same core idea (predict text dimensions before rendering) to the native mobile world, using iOS TextKit and Android TextPaint for measurement instead of DOM APIs.
+Verified against FlashList 2.3.1, React Native 0.79.6, Expo SDK 53.
 
-Key differences from the original:
-- **Native measurement** via Expo modules (iOS `NSString.size`, Android `TextPaint.measureText`)
-- **React Native hooks** (`useTextHeight`, `useFlashListHeights`) for declarative usage
-- **Streaming optimizations** for AI chat use cases
-- **Rich inline flow** for mixed-font content (pills, badges, @mentions)
+## Credits
 
-Pretext itself builds on Sebastian Markbage's [text-layout](https://github.com/nicolo-ribaudo/text-layout) research.
+expo-pretext is a React Native / Expo / Web port of [Pretext](https://github.com/chenglou/pretext) by Cheng Lou. The core line-breaking algorithm is ported; the measurement backends are new (iOS TextKit, Android TextPaint, Web Canvas instead of DOM APIs). Pretext itself builds on Sebastian Markbage's [text-layout](https://github.com/nicolo-ribaudo/text-layout) research.
 
 ## License
 
