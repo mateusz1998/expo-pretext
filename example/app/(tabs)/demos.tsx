@@ -15,7 +15,6 @@ import { TypewriterDemo } from '../../components/demos/Typewriter'
 import { TextMorphingDemo } from '../../components/demos/TextMorphing'
 import { PinchToZoomDemo } from '../../components/demos/PinchToZoom'
 import { CollapsibleDemo } from '../../components/demos/Collapsible'
-import { RichInlineDemo } from '../../components/demos/RichInline'
 import { TextClockDemo } from '../../components/demos/TextClock'
 import { UmbrellaReflowDemo } from '../../components/demos/UmbrellaReflow'
 import { PhysicsTodoDemo } from '../../components/demos/PhysicsTodo'
@@ -118,14 +117,6 @@ const demos = [
     level: 'Beginner',
     desc: 'Expand/collapse with pre-computed heights and smooth Reanimated animation',
     component: CollapsibleDemo,
-  },
-  {
-    id: 'rich-inline',
-    title: 'Rich Inline Flow',
-    api: 'prepareInlineFlow() + walkInlineFlowLines()',
-    level: 'Advanced',
-    desc: 'Mentions, code spans, bold runs — atomic pills stay whole during wraps',
-    component: RichInlineDemo,
   },
   {
     id: 'text-clock',
