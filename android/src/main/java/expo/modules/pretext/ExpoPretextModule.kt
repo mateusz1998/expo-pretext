@@ -1,8 +1,11 @@
 package expo.modules.pretext
 
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Typeface
 import android.text.TextPaint
+import com.facebook.react.common.assets.ReactFontManager
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
 import java.text.BreakIterator
@@ -17,6 +20,31 @@ private data class CacheEntry(
     var hits: Int = 0
 )
 
+private data class InkBoundsValue(
+    val left: Double,
+    val top: Double,
+    val right: Double,
+    val bottom: Double,
+    val width: Double,
+    val height: Double,
+) {
+    fun toMap(): Map<String, Double> {
+        return mapOf(
+            "left" to left,
+            "top" to top,
+            "right" to right,
+            "bottom" to bottom,
+            "width" to width,
+            "height" to height,
+        )
+    }
+}
+
+private data class InkBoundsCacheEntry(
+    val bounds: InkBoundsValue,
+    var hits: Int = 0,
+)
+
 class ExpoPretextModule : Module() {
 
     // ── Caches ──────────────────────────────────────────────────────────────
@@ -29,6 +57,9 @@ class ExpoPretextModule : Module() {
      * Each entry records the measured width and a hit counter.
      */
     private val measureCache = mutableMapOf<String, MutableMap<String, CacheEntry>>()
+
+    /** Ink-bounds measurement cache (separate from advance-width cache). */
+    private val inkMeasureCache = mutableMapOf<String, MutableMap<String, InkBoundsCacheEntry>>()
 
     /** Maximum number of segment entries per font in the measurement cache. */
     private var maxCacheSize: Int = 5000
@@ -72,11 +103,71 @@ class ExpoPretextModule : Module() {
         Function("clearNativeCache") {
             fontCache.clear()
             measureCache.clear()
+            inkMeasureCache.clear()
         }
 
         // ── setNativeCacheSize ──────────────────────────────────────────
         Function("setNativeCacheSize") { size: Int ->
             maxCacheSize = size
+        }
+
+        // ── measureInkWidth ────────────────────────────────────────────
+        // Uses Paint.getTextBounds for ink bounds (tight glyph bounding
+        // rect) instead of Paint.measureText (advance width).
+        // Fixes RN #56349-class italic/bold-italic container clipping.
+        Function("measureInkWidth") { text: String, font: Map<String, Any> ->
+            if (text.isEmpty()) 0.0
+            else {
+                val paint = getOrCreatePaint(font)
+                val fontKey = fontKeyFrom(font)
+                cachedInkMeasure(text, paint, fontKey).width
+            }
+        }
+
+        Function("measureInkBounds") { text: String, font: Map<String, Any> ->
+            if (text.isEmpty()) {
+                mapOf(
+                    "left" to 0.0,
+                    "top" to 0.0,
+                    "right" to 0.0,
+                    "bottom" to 0.0,
+                    "width" to 0.0,
+                    "height" to 0.0,
+                )
+            } else {
+                val paint = getOrCreatePaint(font)
+                val fontKey = fontKeyFrom(font)
+                cachedInkMeasure(text, paint, fontKey).toMap()
+            }
+        }
+
+        // ── measureInkSafe ────────────────────────────────────────────
+        // Single-call API returning ink bounds + advance + font metrics.
+        // Used by getInkSafePadding() to compute italic-safe padding
+        // with one bridge crossing instead of three.
+        Function("measureInkSafe") { text: String, font: Map<String, Any> ->
+            if (text.isEmpty()) {
+                return@Function mapOf(
+                    "left" to 0.0, "top" to 0.0,
+                    "right" to 0.0, "bottom" to 0.0,
+                    "width" to 0.0, "height" to 0.0,
+                    "advance" to 0.0,
+                    "ascender" to 0.0, "descender" to 0.0,
+                )
+            }
+            val paint = getOrCreatePaint(font)
+            val fontKey = fontKeyFrom(font)
+            val bounds = cachedInkMeasure(text, paint, fontKey)
+            val advance = paint.measureText(text).toDouble()
+            val metrics = paint.fontMetrics
+            mapOf(
+                "left" to bounds.left, "top" to bounds.top,
+                "right" to bounds.right, "bottom" to bounds.bottom,
+                "width" to bounds.width, "height" to bounds.height,
+                "advance" to advance,
+                "ascender" to -metrics.ascent.toDouble(),
+                "descender" to metrics.descent.toDouble(),
+            )
         }
 
         // ── getFontMetrics ─────────────────────────────────────────────
@@ -271,13 +362,33 @@ class ExpoPretextModule : Module() {
             val style = (fontMap["fontStyle"] as? String) ?: "normal"
 
             val typefaceStyle = resolveTypefaceStyle(weight, style)
-            val typeface = Typeface.create(family, typefaceStyle)
+            val typeface = resolveTypeface(family, weight, style, typefaceStyle)
 
             TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
                 this.typeface = typeface
                 this.textSize = size
             }
         }
+    }
+
+    private fun resolveTypeface(
+        family: String,
+        weight: String,
+        style: String,
+        fallbackStyle: Int,
+    ): Typeface {
+        val assetManager = appContext.reactContext?.assets
+        if (assetManager != null) {
+            val numericWeight = when (weight) {
+                "normal" -> 400
+                "bold" -> 700
+                else -> weight.toIntOrNull() ?: 400
+            }
+            val italic = style == "italic"
+            return ReactFontManager.getInstance().getTypeface(family, numericWeight, italic, assetManager)
+        }
+
+        return Typeface.create(family, fallbackStyle)
     }
 
     /**
@@ -324,7 +435,7 @@ class ExpoPretextModule : Module() {
 
         // LRU eviction: if over capacity, remove the least-hit entry
         if (fontMap.size > maxCacheSize) {
-            evictLeastUsed(fontMap)
+            evictLeastUsed(fontMap) { it.hits }
         }
 
         return width
@@ -333,13 +444,14 @@ class ExpoPretextModule : Module() {
     /**
      * Evict the entry with the lowest hit count from the given cache map.
      */
-    private fun evictLeastUsed(cache: MutableMap<String, CacheEntry>) {
+    private fun <T> evictLeastUsed(cache: MutableMap<String, T>, hitsOf: (T) -> Int) {
         var minKey: String? = null
         var minHits = Int.MAX_VALUE
 
         for ((key, entry) in cache) {
-            if (entry.hits < minHits) {
-                minHits = entry.hits
+            val hits = hitsOf(entry)
+            if (hits < minHits) {
+                minHits = hits
                 minKey = key
             }
         }
@@ -347,6 +459,108 @@ class ExpoPretextModule : Module() {
         if (minKey != null) {
             cache.remove(minKey)
         }
+    }
+
+    // ── Ink-bounds measurement with LRU cache ────────────────────────────────
+
+    private fun cachedInkMeasure(segment: String, paint: TextPaint, fontKey: String): InkBoundsValue {
+        val fontMap = inkMeasureCache.getOrPut(fontKey) { mutableMapOf() }
+        val existing = fontMap[segment]
+
+        if (existing != null) {
+            existing.hits++
+            return existing.bounds
+        }
+
+        val measured = measureInkBoundsValue(segment, paint)
+
+        fontMap[segment] = InkBoundsCacheEntry(bounds = measured, hits = 1)
+
+        if (fontMap.size > maxCacheSize) {
+            evictLeastUsed(fontMap) { it.hits }
+        }
+
+        return measured
+    }
+
+    private fun measureInkBoundsValue(segment: String, paint: TextPaint): InkBoundsValue {
+        val metrics = paint.fontMetrics
+        val advance = paint.measureText(segment).toDouble()
+        val ascent = kotlin.math.abs(metrics.ascent.toDouble())
+        val descent = kotlin.math.abs(metrics.descent.toDouble())
+        val leading = kotlin.math.abs(metrics.leading.toDouble())
+        val padding = maxOf(8.0, kotlin.math.ceil(paint.textSize.toDouble()))
+        val canvasWidth = maxOf(1, kotlin.math.ceil(advance + padding * 2.0 + paint.textSize.toDouble()).toInt())
+        val canvasHeight = maxOf(1, kotlin.math.ceil(ascent + descent + leading + padding * 2.0 + 2.0).toInt())
+
+        val bitmap = Bitmap.createBitmap(canvasWidth, canvasHeight, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        canvas.drawColor(android.graphics.Color.TRANSPARENT)
+
+        val originX = padding.toFloat()
+        val originY = (padding + ascent + 1.0).toFloat()
+        canvas.drawText(segment, originX, originY, paint)
+
+        scanRasterInkBounds(bitmap, originX.toDouble(), originY.toDouble())?.let {
+            bitmap.recycle()
+            return it
+        }
+
+        bitmap.recycle()
+
+        val top = kotlin.math.floor(metrics.ascent.toDouble())
+        val bottom = kotlin.math.ceil(metrics.descent.toDouble())
+        val ceiledAdvance = kotlin.math.ceil(advance)
+        return InkBoundsValue(
+            left = 0.0,
+            top = top,
+            right = ceiledAdvance,
+            bottom = bottom,
+            width = ceiledAdvance,
+            height = bottom - top,
+        )
+    }
+
+    private fun scanRasterInkBounds(
+        bitmap: Bitmap,
+        originX: Double,
+        originY: Double,
+    ): InkBoundsValue? {
+        val width = bitmap.width
+        val height = bitmap.height
+        var minX = width
+        var maxX = -1
+        var minY = height
+        var maxY = -1
+
+        for (y in 0 until height) {
+            for (x in 0 until width) {
+                val alpha = bitmap.getPixel(x, y) ushr 24
+                if (alpha > 0) {
+                    if (x < minX) minX = x
+                    if (x > maxX) maxX = x
+                    if (y < minY) minY = y
+                    if (y > maxY) maxY = y
+                }
+            }
+        }
+
+        if (maxX < 0 || maxY < 0 || minX >= width || minY >= height) {
+            return null
+        }
+
+        val left = kotlin.math.floor(minX.toDouble() - originX)
+        val right = kotlin.math.ceil(maxX.toDouble() + 1.0 - originX)
+        val top = kotlin.math.floor(minY.toDouble() - originY)
+        val bottom = kotlin.math.ceil(maxY.toDouble() + 1.0 - originY)
+        return InkBoundsValue(
+            left = left,
+            top = top,
+            right = right,
+            bottom = bottom,
+            width = right - left,
+            height = bottom - top,
+        )
     }
 
     // ── Utility ─────────────────────────────────────────────────────────────
