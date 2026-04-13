@@ -4,7 +4,7 @@
 
 [![npm](https://img.shields.io/npm/v/expo-pretext.svg)](https://www.npmjs.com/package/expo-pretext)
 [![license](https://img.shields.io/npm/l/expo-pretext.svg)](./LICENSE)
-[![tests](https://img.shields.io/badge/tests-386%20passing-brightgreen.svg)](./src/__tests__)
+[![tests](https://img.shields.io/badge/tests-392%20passing-brightgreen.svg)](./src/__tests__)
 
 <p align="center">
   <img src="https://github.com/JubaKitiashvili/expo-pretext/raw/main/assets/demos/hero.gif" width="720" alt="expo-pretext demo reel" />
@@ -154,11 +154,55 @@ function ZoomableText({ text, maxWidth }) {
 }
 ```
 
+### Fix italic text clipping (RN #56349)
+
+React Native sizes text containers to advance width, but italic glyphs extend beyond that — causing visual clipping. expo-pretext fixes this with ink-bounds measurement.
+
+**Drop-in fix — one component:**
+
+```tsx
+import { InkSafeText } from 'expo-pretext'
+
+// Before (clips):  <Text style={style}>fly</Text>
+// After (fixed):
+<InkSafeText style={{
+  fontFamily: 'Georgia',
+  fontSize: 80,
+  fontWeight: 'bold',
+  fontStyle: 'italic',
+}}>
+  fly
+</InkSafeText>
+```
+
+`<InkSafeText>` is a drop-in `<Text>` replacement. Non-italic text renders with zero overhead.
+
+**Custom container sizing — hook:**
+
+```tsx
+import { useInkSafeStyle } from 'expo-pretext'
+
+const { style: safeStyle, inkWidth } = useInkSafeStyle(text, baseStyle)
+
+<View style={{ width: inkWidth, overflow: 'hidden' }}>
+  <Text style={safeStyle} numberOfLines={1}>{text}</Text>
+</View>
+```
+
+**FlashList / imperative — pure function:**
+
+```tsx
+import { getInkSafePadding } from 'expo-pretext'
+
+const { padding, inkWidth } = getInkSafePadding(text, style)
+```
+
 ## Feature tour
 
 | Category | What you get |
 |---|---|
-| **Layout primitives** | `layoutColumn` (obstacles), `useObstacleLayout`, `fitFontSize`, `truncateText`, `customBreakRules`, `measureNaturalWidth` |
+| **Layout primitives** | `layoutColumn` (obstacles), `useObstacleLayout`, `fitFontSize`, `truncateText`, `customBreakRules`, `measureNaturalWidth`, `measureInkWidth` (italic-safe) |
+| `<InkSafeText>` | Drop-in `<Text>` replacement — auto-fixes italic/bold clipping |
 | **Virtualization** | `useTextHeight`, `useFlashListHeights`, `measureHeights` (batch) |
 | **Streaming AI chat** | `useStreamingLayout`, `useMultiStreamLayout`, `prepareStreaming`, `measureCodeBlockHeight` |
 | **Animation (Reanimated)** | `useAnimatedTextHeight`, `useCollapsibleHeight`, `usePinchToZoomText`, `useTypewriterLayout`, `useTextMorphing` |
