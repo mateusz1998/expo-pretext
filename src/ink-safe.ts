@@ -6,6 +6,7 @@ import type { TextStyle, InkBounds, InkSafeResult, InkSafePadding } from './type
 import { getNativeModule } from './ExpoPretext'
 import { textStyleToFontDescriptor, getFontMetrics } from './font-utils'
 import { measureInkBounds } from './ink-width'
+import { Platform } from 'react-native'
 
 const ZERO_PADDING: InkSafePadding = {
   paddingLeft: 0,
@@ -45,8 +46,14 @@ const ZERO_RESULT: InkSafeResult = {
 export function getInkSafePadding(text: string, style: TextStyle): InkSafeResult {
   if (!text) return ZERO_RESULT
 
-  // Fast path: non-italic text almost never overshoots
-  if (style.fontStyle !== 'italic') {
+  // Fast path: non-italic text almost never overshoots.
+  // Also check if the font family name contains "italic" (case-insensitive)
+  // to catch custom fonts like "PlayfairDisplay-BoldItalic" where italic is
+  // baked into the font file, not the fontStyle property.
+  const isItalic = style.fontStyle === 'italic' ||
+    /italic|oblique/i.test(style.fontFamily)
+
+  if (!isItalic) {
     const advance = estimateAdvance(text, style)
     return {
       padding: ZERO_PADDING,
@@ -88,17 +95,21 @@ export function getInkSafePadding(text: string, style: TextStyle): InkSafeResult
   )
 }
 
+// iOS raster scanning can underestimate ink bounds by up to 1pt due to
+// anti-aliasing at the glyph edge. Add a small safety inset on iOS.
+const IOS_SAFETY_INSET = Platform.OS === 'ios' ? 1 : 0
+
 function computePadding(
   inkBounds: InkBounds,
   advance: number,
   ascender: number,
   descender: number,
 ): InkSafeResult {
-  const paddingLeft = Math.max(0, Math.ceil(-inkBounds.left))
+  const paddingLeft = Math.max(0, Math.ceil(-inkBounds.left)) + IOS_SAFETY_INSET
   const inkRightExtent = Math.max(advance, inkBounds.right)
-  const paddingRight = Math.max(0, Math.ceil(inkRightExtent - advance))
+  const paddingRight = Math.max(0, Math.ceil(inkRightExtent - advance)) + IOS_SAFETY_INSET
   const paddingTop = Math.max(0, Math.ceil(-inkBounds.top - ascender))
-  const paddingBottom = Math.max(0, Math.ceil(inkBounds.bottom - descender))
+  const paddingBottom = Math.max(0, Math.ceil(inkBounds.bottom - descender)) + IOS_SAFETY_INSET
   const inkWidth = Math.max(0, Math.ceil(advance + paddingLeft + paddingRight))
 
   const isOvershooting = paddingLeft > 0 || paddingRight > 0 || paddingTop > 0 || paddingBottom > 0

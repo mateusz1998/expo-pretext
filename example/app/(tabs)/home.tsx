@@ -1,4 +1,5 @@
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 
 const STATS = [
@@ -18,6 +19,7 @@ export default function HomeScreen() {
   const router = useRouter()
 
   return (
+    <SafeAreaView style={s.root} edges={['top']}>
     <ScrollView style={s.root} contentContainerStyle={s.content}>
       <View style={s.hero}>
         <Text style={s.heroTitle}>expo-pretext</Text>
@@ -62,13 +64,14 @@ export default function HomeScreen() {
         </View>
       </View>
     </ScrollView>
+    </SafeAreaView>
   )
 }
 
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#0a0a0c' },
   content: { paddingBottom: 40 },
-  hero: { paddingTop: 80, paddingHorizontal: 24, paddingBottom: 32 },
+  hero: { paddingTop: 16, paddingHorizontal: 24, paddingBottom: 32 },
   heroTitle: {
     fontFamily: 'Menlo', fontSize: 28, fontWeight: '900',
     color: '#ffd369', letterSpacing: 1.5, marginBottom: 12,

@@ -67,11 +67,33 @@
 - [x] Fixed onLayout feedback loops and gesture handler conflicts
 - [x] Removed Rich Inline Flow demo pending cleaner API solution
 
+## ~~Ink-bounds Measurement — v0.9.0 (DONE)~~ ✅
+
+- [x] **`measureInkWidth(text, style)`** — cross-platform ink-bounds API for italic/bold-italic container sizing. Fixes RN #56349 at measurement layer.
+  - iOS: `NSAttributedString.boundingRect(.usesDeviceMetrics)`
+  - Android: `Paint.getTextBounds`
+  - Web: `TextMetrics.actualBoundingBoxLeft + actualBoundingBoxRight`
+- [x] Separate native `inkMeasureCache` with LRU eviction on all platforms
+- [x] Fixed TypeScript fontWeight/fontStyle narrowing in web-backend.ts
+
 ## ~~README & Docs — v0.8.3 (DONE)~~ ✅
 
 - [x] Two hero demo reels (720w @ 30fps) replacing three-up thumbnail grid
 - [x] MarkdownChat example polish — white assistant bubble, darker background, proper max-width cap
 - [x] Rewrote production-ready tagline for outside readers
+
+## ~~InkSafeText API + App Restructure — v0.10.0 (DONE)~~ ✅
+
+- [x] **`<InkSafeText>`** — drop-in `<Text>` replacement with auto italic-safe padding
+- [x] **`useInkSafeStyle`** — hook returning merged style + inkWidth
+- [x] **`getInkSafePadding`** — pure function for FlashList/imperative use
+- [x] **`measureInkSafe`** — single native call (ink bounds + advance + metrics)
+- [x] iOS safety insets for raster scanning anti-aliasing
+- [x] Font name italic detection (e.g. PlayfairDisplay-BoldItalic)
+- [x] Example app restructured: Home / Demos (categorized) / Bug Fixes / Tools
+- [x] Read More / Less demo with typewriter reveal + speed control
+- [x] Upgraded to Expo SDK 55 — NativeTabs, SF Symbols, glass blur
+- [x] README "Fix Italic Clipping" section with 3-layer API docs
 
 ---
 

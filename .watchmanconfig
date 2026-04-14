@@ -1,0 +1,8 @@
+{
+  "ignore_dirs": [
+    "example/node_modules/expo-pretext",
+    "example/node_modules/.cache",
+    "node_modules",
+    ".git"
+  ]
+}

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { View, Text, StyleSheet, ScrollView } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { sampleTexts } from '../../data/sample-texts'
 import { useTextHeight } from 'expo-pretext'
 
@@ -51,7 +52,7 @@ export default function ToolsScreen() {
   const totalTests = texts.length * testWidths.length
 
   return (
-    <View style={s.container}>
+    <SafeAreaView style={s.container} edges={['top']}>
       <ScrollView contentContainerStyle={s.content}>
         <Text style={s.sectionTitle}>Accuracy Testing</Text>
         <Text style={s.subtitle}>
@@ -70,7 +71,7 @@ export default function ToolsScreen() {
           </View>
         ))}
       </ScrollView>
-    </View>
+    </SafeAreaView>
   )
 }
 

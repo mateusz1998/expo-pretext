@@ -1,4 +1,5 @@
 import { View, Text, ScrollView, StyleSheet, Platform } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { useFonts } from 'expo-font'
 import {
   prepareWithSegments,
@@ -45,6 +46,7 @@ export default function TextBugsScreen() {
   if (!fontsLoaded) return <View style={s.root}><Text style={s.loading}>Loading fonts...</Text></View>
 
   return (
+    <SafeAreaView style={s.root} edges={['top']}>
     <ScrollView style={s.root} contentContainerStyle={s.content}>
       <Text style={s.title}>RN #56349 — Italic Ink Overshoot</Text>
       <Text style={s.desc}>
@@ -249,6 +251,7 @@ export default function TextBugsScreen() {
         </Text>
       </View>
     </ScrollView>
+    </SafeAreaView>
   )
 }
 

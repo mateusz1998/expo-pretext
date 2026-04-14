@@ -1,5 +1,68 @@
 # Changelog
 
+## 0.10.0 — 2026-04-14
+
+### Added
+
+- **`<InkSafeText>`** — drop-in `<Text>` replacement that auto-fixes italic/bold
+  text clipping. No wrapper View, no manual padding. Non-italic text renders with
+  zero overhead.
+- **`useInkSafeStyle(text, style)`** — React hook returning merged style with
+  ink-safe padding + `inkWidth` for container sizing.
+- **`getInkSafePadding(text, style)`** — pure function for FlashList/imperative
+  use. Returns padding, ink width, advance, ink bounds, and overshoot flag.
+- **`measureInkSafe`** native function (iOS + Android) — single bridge call
+  returning ink bounds + advance width + font metrics. Replaces 3 separate calls.
+
+### Example app
+
+- Restructured from 4 flat tabs to Home / Demos / Bug Fixes / Tools
+- Home hero screen with library tagline, key metrics, and featured demo cards
+- Demos categorized into 4 sections: Real-World, Text Effects, Advanced Layout, Interactive
+- New "Read More / Less" demo with typewriter reveal + speed control
+- Upgraded to **Expo SDK 55** with NativeTabs, SF Symbols, and glass blur effect
+- AI Chat moved from standalone tab into Demos category
+
+### Tests
+
+- 402 automated tests (was 392)
+- New: `src/__tests__/ink-safe.test.ts` (6 tests)
+- New: integration tests for `getInkSafePadding` (3 tests)
+
+---
+
+## 0.9.0 — 2026-04-12
+
+### Added
+
+- **`measureInkWidth(text, style)`** — cross-platform ink-bounds text
+  measurement. Returns the real glyph image-bound width rather than
+  advance width. Use this to size containers for italic and bold-italic
+  text where glyph outlines overshoot advance widths, fixing
+  [RN #56349](https://github.com/facebook/react-native/issues/56349)-class
+  clipping at the measurement layer.
+
+  - iOS: `NSAttributedString.boundingRect` with `.usesDeviceMetrics`
+  - Android: `Paint.getTextBounds` (tight ink bounding rect)
+  - Web: `TextMetrics.actualBoundingBoxLeft + actualBoundingBoxRight`
+
+### Native module additions
+
+- iOS: `measureInkWidth` function with dedicated `inkMeasureCache`
+- Android: `measureInkWidth` function with dedicated `inkMeasureCache`
+- `clearNativeCache()` now clears both advance and ink caches
+
+### Tests
+
+- 392 automated tests (was 386)
+- New: `src/__tests__/ink-width.test.ts` (5 tests)
+- New: integration sanity check for `measureInkWidth`
+
+### Bug fixes
+
+- Fixed TypeScript narrowing error in web-backend.ts for
+  `fontWeight`/`fontStyle` string types
+
 ## 0.8.3 — 2026-04-11
 
 ### Docs

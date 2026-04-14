@@ -1,4 +1,5 @@
 import { View, Text, StyleSheet, Pressable, SectionList } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { useState, useLayoutEffect, useEffect } from 'react'
 import { useNavigation, useLocalSearchParams } from 'expo-router'
 
@@ -118,6 +119,7 @@ export default function DemosScreen() {
   }
 
   return (
+    <SafeAreaView style={styles.container} edges={['top']}>
     <SectionList
       style={styles.container}
       contentContainerStyle={styles.list}
@@ -135,6 +137,7 @@ export default function DemosScreen() {
         </Pressable>
       )}
     />
+    </SafeAreaView>
   )
 }
 

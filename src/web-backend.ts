@@ -2,7 +2,7 @@
 // Canvas + Intl.Segmenter measurement backend for Expo Web.
 // Implements the same interface as the native iOS/Android module.
 
-import type { FontDescriptor, NativeSegmentResult } from './types'
+import type { FontDescriptor, InkBounds, NativeSegmentResult, TextStyle } from './types'
 import { getFontKey } from './font-utils'
 
 type MeasureNativeOptions = {
@@ -19,23 +19,27 @@ export interface WebBackendModule {
   measureTextHeight(text: string, font: FontDescriptor, maxWidth: number, lineHeight: number): { height: number; lineCount: number }
   clearNativeCache(): void
   setNativeCacheSize(size: number): void
+  measureInkWidth(text: string, font: FontDescriptor): number
+  measureInkBounds(text: string, font: FontDescriptor): InkBounds
   getFontMetrics(font: FontDescriptor): { ascender: number; descender: number; xHeight: number; capHeight: number; lineGap: number }
 }
 
 // ─── Canvas Context (lazy singleton) ─────────────────────
-let measureCtx: CanvasRenderingContext2D | null | undefined = undefined
+type MeasureContext = CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D
 
-function getMeasureContext(): CanvasRenderingContext2D | null {
+let measureCtx: MeasureContext | null | undefined = undefined
+
+function getMeasureContext(): MeasureContext | null {
   if (measureCtx !== undefined) return measureCtx
   try {
     if (typeof OffscreenCanvas !== 'undefined') {
-      measureCtx = new OffscreenCanvas(1, 1).getContext('2d')
+      measureCtx = new OffscreenCanvas(1, 1).getContext('2d') as MeasureContext | null
       return measureCtx
     }
   } catch {}
   try {
     if (typeof document !== 'undefined') {
-      measureCtx = document.createElement('canvas').getContext('2d')
+      measureCtx = document.createElement('canvas').getContext('2d') as MeasureContext | null
       return measureCtx
     }
   } catch {}
@@ -46,7 +50,7 @@ function getMeasureContext(): CanvasRenderingContext2D | null {
 // ─── Font Application ────────────────────────────────────
 let lastFontString = ''
 
-function applyFont(ctx: CanvasRenderingContext2D, font: FontDescriptor): void {
+function applyFont(ctx: MeasureContext, font: FontDescriptor): void {
   const weight = font.fontWeight ?? '400'
   const style = font.fontStyle === 'italic' ? 'italic' : 'normal'
   const fontString = `${style} ${weight} ${font.fontSize}px "${font.fontFamily}"`
@@ -92,17 +96,18 @@ function segmentText(text: string, locale?: string): { segments: string[]; isWor
 const WEB_CACHE_DEFAULT = 5000
 let webCacheMaxSize = WEB_CACHE_DEFAULT
 const webCache = new Map<string, number>()
+const webInkCache = new Map<string, InkBounds>()
 
-function measureWidth(ctx: CanvasRenderingContext2D, text: string): number {
+function measureWidth(ctx: MeasureContext, text: string): number {
   return ctx.measureText(text).width
 }
 
-function getCachedOrMeasure(ctx: CanvasRenderingContext2D, font: FontDescriptor, segment: string): number {
+function getCachedOrMeasure(ctx: MeasureContext, font: FontDescriptor, segment: string): number {
   const key = getFontKey({
     fontFamily: font.fontFamily,
     fontSize: font.fontSize,
-    fontWeight: font.fontWeight,
-    fontStyle: font.fontStyle,
+    fontWeight: font.fontWeight as TextStyle['fontWeight'],
+    fontStyle: font.fontStyle as TextStyle['fontStyle'],
   }) + '|' + segment
   const cached = webCache.get(key)
   if (cached !== undefined) {
@@ -161,8 +166,62 @@ export function createWebBackend(): WebBackendModule {
       return Promise.resolve(doSegmentAndMeasure(text, font, options))
     },
 
+    measureInkBounds(text: string, font: FontDescriptor): InkBounds {
+      if (!text) {
+        return { left: 0, top: 0, right: 0, bottom: 0, width: 0, height: 0 }
+      }
+      const ctx = getMeasureContext()
+      if (!ctx) {
+        const italic = font.fontStyle === 'italic'
+        const left = italic ? -font.fontSize * 0.12 : 0
+        const right = text.length * font.fontSize * 0.55 * (italic ? 1.08 : 1)
+        const top = -font.fontSize * 0.8
+        const bottom = font.fontSize * 0.2
+        return {
+          left,
+          top,
+          right,
+          bottom,
+          width: right - left,
+          height: bottom - top,
+        }
+      }
+      applyFont(ctx, font)
+      const fontString = ctx.font
+      const key = fontString + '|ink|' + text
+      const hit = webInkCache.get(key)
+      if (hit !== undefined) return hit
+
+      const metrics = ctx.measureText(text)
+      const left = metrics.actualBoundingBoxLeft ?? 0
+      const right = metrics.actualBoundingBoxRight ?? metrics.width
+      const ascent = metrics.actualBoundingBoxAscent ?? metrics.fontBoundingBoxAscent ?? font.fontSize * 0.8
+      const descent = metrics.actualBoundingBoxDescent ?? metrics.fontBoundingBoxDescent ?? font.fontSize * 0.2
+      const bounds = {
+        left: -left,
+        top: -ascent,
+        right: right,
+        bottom: descent,
+        width: Math.ceil(left + right) + 1,
+        height: Math.ceil(ascent + descent) + 1,
+      }
+
+      if (webInkCache.size >= webCacheMaxSize) {
+        const firstKey = webInkCache.keys().next().value
+        if (firstKey !== undefined) webInkCache.delete(firstKey)
+      }
+      webInkCache.set(key, bounds)
+      return bounds
+    },
+
+    measureInkWidth(text: string, font: FontDescriptor): number {
+      if (!text) return 0
+      return this.measureInkBounds(text, font).width
+    },
+
     clearNativeCache() {
       webCache.clear()
+      webInkCache.clear()
       lastFontString = ''
     },
 
