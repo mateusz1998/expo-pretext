@@ -82,6 +82,12 @@
 - [x] MarkdownChat example polish — white assistant bubble, darker background, proper max-width cap
 - [x] Rewrote production-ready tagline for outside readers
 
+## ~~Developer Tools demos — v0.13.0 (DONE)~~ ✅
+
+- [x] **Dynamic Type / Accessibility demo** — live scale slider + real `onFontScaleChange` subscription
+- [x] **Debug Overlay demo** — `<PretextDebugOverlay>` + accuracy tally across widths
+- [x] **Snapshot Testing demo** — `buildHeightSnapshot` + `compareHeightSnapshots` with live perturbations
+
 ## ~~Headlines Feed + Dark Theme — v0.12.0 (DONE)~~ ✅
 
 - [x] **Headlines Feed (10K)** — plain-text FlashList v2 demo, canary for `getHeight()` API
@@ -129,9 +135,9 @@ good enough for typical use cases, and real-world impact is unproven.
 - [x] Breakout Text arcade game (flagship `layoutColumn()` demo)
 - [x] Text Path with per-character tangent rotation
 - [x] Umbrella Reflow (Matrix rain + shadow blocking)
-- [ ] Accessibility demo with `onFontScaleChange`
-- [ ] Debug overlay demo showing predicted vs actual
-- [ ] Snapshot testing example in CI
+- [x] Accessibility demo with `onFontScaleChange`
+- [x] Debug overlay demo showing predicted vs actual
+- [x] Snapshot testing example in CI
 
 ### Documentation
 

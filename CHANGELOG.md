@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.13.0 — 2026-04-17
+
+### Example app
+
+- **Developer Tools** section added to Demos with three new demos:
+  - **Dynamic Type** — live re-layout across simulated font scales 1.0–2.0x;
+    also subscribes to real system `onFontScaleChange` and clears caches.
+  - **Debug Overlay** — wraps rows in `<PretextDebugOverlay>` showing
+    predicted vs actual heights with colored borders and an accuracy tally.
+  - **Snapshot Testing** — `buildHeightSnapshot` + `compareHeightSnapshots`
+    interactively: pick a perturbation (font size, width, line height),
+    watch the mismatch diff appear.
+
+Closes TODO "Demo app enhancements" backlog items for Accessibility,
+Debug overlay, and Snapshot testing.
+
 ## 0.12.0 — 2026-04-17
 
 ### Example app

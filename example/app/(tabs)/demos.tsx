@@ -23,6 +23,9 @@ import { BreakoutTextDemo } from '../../components/demos/BreakoutText'
 import { TextPathDemo } from '../../components/demos/TextPath'
 import { ReadMoreDemo } from '../../components/demos/ReadMore'
 import { HeadlinesFeedDemo } from '../../components/demos/HeadlinesFeed'
+import { AccessibilityDemo } from '../../components/demos/Accessibility'
+import { DebugOverlayDemo } from '../../components/demos/DebugOverlay'
+import { SnapshotTestingDemo } from '../../components/demos/SnapshotTesting'
 import ChatScreen from './chat'
 
 type Demo = {
@@ -71,6 +74,14 @@ const sections: { title: string; data: Demo[] }[] = [
       { id: 'physics-todo', title: 'Physics Todo', api: 'measureNaturalWidth()', desc: 'Bouncing items — real text widths drive collision', component: PhysicsTodoDemo },
       { id: 'pinch-zoom', title: 'Pinch to Zoom', api: 'usePinchToZoomText()', desc: 'Per-frame fontSize scaling at 0.0002ms', component: PinchToZoomDemo },
       { id: 'ascii-art', title: 'ASCII Art', api: 'prepareWithSegments() + layoutWithLines()', desc: 'Character-level width measurement', component: AsciiArtDemo },
+    ],
+  },
+  {
+    title: 'Developer Tools',
+    data: [
+      { id: 'accessibility', title: 'Dynamic Type', api: 'onFontScaleChange() + clearAllCaches()', desc: 'Live re-layout as the system font scale changes', component: AccessibilityDemo },
+      { id: 'debug-overlay', title: 'Debug Overlay', api: '<PretextDebugOverlay /> + compareDebugMeasurement()', desc: 'Predicted vs actual heights with accuracy tally', component: DebugOverlayDemo },
+      { id: 'snapshot', title: 'Snapshot Testing', api: 'buildHeightSnapshot() + compareHeightSnapshots()', desc: 'CI regression pattern — baseline vs current', component: SnapshotTestingDemo },
     ],
   },
 ]
