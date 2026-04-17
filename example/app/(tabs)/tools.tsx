@@ -32,7 +32,7 @@ function AccuracyRow({ text, testWidth }: { text: string; testWidth: number }) {
         </View>
         <View style={[s.metric, pass ? s.metricPass : (diff !== null ? s.metricFail : s.metricPending)]}>
           <Text style={s.metricLabel}>Result</Text>
-          <Text style={[s.metricValue, pass && { color: '#155724' }, diff !== null && !pass && { color: '#721c24' }]}>
+          <Text style={[s.metricValue, pass && { color: '#4ade80' }, diff !== null && !pass && { color: '#ef4444' }]}>
             {diff !== null ? (pass ? 'PASS' : 'FAIL') : '...'}
           </Text>
           {diff !== null && <Text style={s.metricDiff}>{diff.toFixed(1)}px</Text>}
@@ -76,35 +76,63 @@ export default function ToolsScreen() {
 }
 
 const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f5f5' },
+  container: { flex: 1, backgroundColor: '#0a0a0c' },
   content: { padding: 12, gap: 12, paddingBottom: 40 },
   sectionTitle: {
-    fontSize: 13, fontWeight: '800', color: '#666',
-    letterSpacing: 0.8, textTransform: 'uppercase',
+    fontFamily: 'Menlo',
+    fontSize: 12, fontWeight: '700', color: '#ffd369',
+    letterSpacing: 1, textTransform: 'uppercase',
     marginBottom: 4, paddingHorizontal: 4,
   },
-  subtitle: { fontSize: 12, color: '#666', textAlign: 'center', marginBottom: 2 },
-  section: { backgroundColor: '#fff', borderRadius: 12, padding: 12 },
-  langTitle: { fontSize: 16, fontWeight: '700', marginBottom: 10, textTransform: 'capitalize' },
+  subtitle: {
+    fontFamily: 'Menlo',
+    fontSize: 11, color: 'rgba(255,255,255,0.5)',
+    textAlign: 'center', marginBottom: 2,
+  },
+  section: {
+    backgroundColor: '#121218', borderRadius: 14, padding: 14,
+    borderWidth: 1, borderColor: 'rgba(255,211,105,0.18)',
+  },
+  langTitle: {
+    fontFamily: 'Menlo',
+    fontSize: 12, fontWeight: '800', color: '#ffd369',
+    letterSpacing: 0.8, marginBottom: 10, textTransform: 'uppercase',
+  },
   testCase: { marginBottom: 14 },
   testHeader: { marginBottom: 4 },
-  widthLabel: { fontSize: 14, fontWeight: '600' },
-  metricsRow: { flexDirection: 'row', gap: 6, marginBottom: 6 },
-  metric: {
-    flex: 1, padding: 6, borderRadius: 8, alignItems: 'center',
-    borderWidth: 1, borderColor: '#eee',
+  widthLabel: {
+    fontFamily: 'Menlo',
+    fontSize: 11, fontWeight: '700',
+    color: 'rgba(255,255,255,0.65)', letterSpacing: 0.5,
   },
-  metricPass: { backgroundColor: '#d4edda', borderColor: '#28a745' },
-  metricFail: { backgroundColor: '#f8d7da', borderColor: '#dc3545' },
-  metricRef: { backgroundColor: '#e2e3e5', borderColor: '#6c757d' },
-  metricPending: { backgroundColor: '#f0f0f0', borderColor: '#ddd' },
-  metricLabel: { fontSize: 10, fontWeight: '700', color: '#555' },
-  metricValue: { fontSize: 16, fontWeight: '700', color: '#1a1a1a', marginTop: 2 },
-  metricDiff: { fontSize: 9, color: '#888', marginTop: 1 },
+  metricsRow: { flexDirection: 'row', gap: 6, marginBottom: 8 },
+  metric: {
+    flex: 1, padding: 8, borderRadius: 10, alignItems: 'center',
+    backgroundColor: '#1a1a22',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)',
+  },
+  metricPass: { borderColor: 'rgba(74,222,128,0.6)', borderWidth: 1.5 },
+  metricFail: { borderColor: 'rgba(239,68,68,0.6)', borderWidth: 1.5 },
+  metricRef: { borderColor: 'rgba(255,255,255,0.2)' },
+  metricPending: { borderColor: 'rgba(255,255,255,0.08)' },
+  metricLabel: {
+    fontFamily: 'Menlo',
+    fontSize: 8, fontWeight: '700',
+    color: 'rgba(255,255,255,0.4)', letterSpacing: 1.2,
+  },
+  metricValue: {
+    fontFamily: 'Menlo',
+    fontSize: 16, fontWeight: '800', color: '#ffd369',
+    marginTop: 2,
+  },
+  metricDiff: {
+    fontFamily: 'Menlo',
+    fontSize: 8, color: 'rgba(255,255,255,0.35)', marginTop: 1,
+  },
   textBox: {
-    backgroundColor: '#f8f8f8', borderRadius: 6, padding: 4,
-    borderWidth: StyleSheet.hairlineWidth, borderColor: '#ddd',
+    backgroundColor: '#fff', borderRadius: 6, padding: 4,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)',
     alignSelf: 'flex-start',
   },
-  sampleText: { fontSize: 16, lineHeight: 24 },
+  sampleText: { fontSize: 16, lineHeight: 24, color: '#1a1a1a' },
 })

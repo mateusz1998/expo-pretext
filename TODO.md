@@ -82,6 +82,11 @@
 - [x] MarkdownChat example polish — white assistant bubble, darker background, proper max-width cap
 - [x] Rewrote production-ready tagline for outside readers
 
+## ~~Headlines Feed + Dark Theme — v0.12.0 (DONE)~~ ✅
+
+- [x] **Headlines Feed (10K)** — plain-text FlashList v2 demo, canary for `getHeight()` API
+- [x] Dark theme for Demos and Tools tabs (matches Home + Bug Fixes)
+
 ## ~~FlashList v2 migration — v0.11.0 (DONE)~~ ✅
 
 - [x] **`useFlashListHeights`** redesigned — returns `{ getHeight(item) }` for v2

@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.12.0 — 2026-04-17
+
+### Example app
+
+- **Headlines Feed (10K)** — new plain-text FlashList v2 demo showing
+  `useFlashListHeights().getHeight()` on 10,000 varying-length rows. Canary
+  for the v0.11 hook redesign.
+- Dark theme applied to Demos and Tools tabs — matches the glass NativeTabs
+  aesthetic already used in Home and Bug Fixes.
+
 ## 0.11.0 — 2026-04-17
 
 ### Breaking

@@ -22,6 +22,7 @@ import { PhysicsTodoDemo } from '../../components/demos/PhysicsTodo'
 import { BreakoutTextDemo } from '../../components/demos/BreakoutText'
 import { TextPathDemo } from '../../components/demos/TextPath'
 import { ReadMoreDemo } from '../../components/demos/ReadMore'
+import { HeadlinesFeedDemo } from '../../components/demos/HeadlinesFeed'
 import ChatScreen from './chat'
 
 type Demo = {
@@ -37,6 +38,7 @@ const sections: { title: string; data: Demo[] }[] = [
     title: 'Real-World Patterns',
     data: [
       { id: 'read-more', title: 'Read More / Less', api: 'truncateText() + useTypewriterLayout()', desc: 'Truncated preview with typewriter reveal on expand', component: ReadMoreDemo },
+      { id: 'headlines-feed', title: 'Headlines Feed (10K)', api: 'useFlashListHeights().getHeight()', desc: 'Plain-text FlashList v2 with exact pre-measured heights', component: HeadlinesFeedDemo },
       { id: 'markdown-chat', title: 'AI Chat', api: 'FlashList + useStreamingLayout()', desc: '10,000 messages with rich markdown and streaming', component: ChatScreen },
       { id: 'tight-bubbles', title: 'Tight Chat Bubbles', api: 'walkLineRanges() + layout()', desc: 'Shrinkwrap bubbles — minimum width that keeps line count', component: TightBubblesDemo },
       { id: 'accordion', title: 'Accordion Heights', api: 'prepare() + layout()', desc: 'Expand/collapse with pre-computed heights', component: AccordionDemo },
@@ -134,35 +136,36 @@ export default function DemosScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f5f5' },
+  container: { flex: 1, backgroundColor: '#0a0a0c' },
   demoFullscreen: {
     position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-    backgroundColor: '#f5f5f5', zIndex: 100,
+    backgroundColor: '#0a0a0c', zIndex: 100,
   },
   screenTitle: {
-    fontSize: 28, fontWeight: '800', color: '#1a1a1a',
+    fontSize: 28, fontWeight: '800', color: '#fff',
     paddingHorizontal: 20, paddingTop: 8, paddingBottom: 4,
   },
   demoHeader: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 4, paddingVertical: 10,
-    borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: '#ddd',
-    backgroundColor: '#f5f5f5',
+    borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: '#0a0a0c',
   },
   backBtn: { width: 90, paddingLeft: 12 },
-  backText: { fontSize: 16, color: '#2563eb', fontWeight: '500' },
-  demoTitle: { fontSize: 17, fontWeight: '700', color: '#1a1a1a', textAlign: 'center', flex: 1 },
+  backText: { fontSize: 16, color: '#ffd369', fontWeight: '500' },
+  demoTitle: { fontSize: 17, fontWeight: '700', color: '#fff', textAlign: 'center', flex: 1 },
   list: { padding: 16, paddingBottom: 40 },
   sectionTitle: {
-    fontSize: 13, fontWeight: '800', color: '#666',
-    letterSpacing: 0.8, textTransform: 'uppercase',
+    fontFamily: 'Menlo',
+    fontSize: 12, fontWeight: '700', color: 'rgba(255,255,255,0.5)',
+    letterSpacing: 1, textTransform: 'uppercase',
     marginTop: 20, marginBottom: 8, paddingHorizontal: 4,
   },
   card: {
-    backgroundColor: '#fff', borderRadius: 12, padding: 14, marginBottom: 8,
-    borderWidth: 1, borderColor: '#eee',
+    backgroundColor: '#121218', borderRadius: 12, padding: 14, marginBottom: 8,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
   },
-  cardTitle: { fontSize: 16, fontWeight: '600', color: '#1a1a1a' },
-  cardApi: { fontSize: 11, color: '#2563eb', marginTop: 3, fontFamily: 'Menlo' },
-  cardDesc: { fontSize: 13, color: '#666', marginTop: 4, lineHeight: 18 },
+  cardTitle: { fontSize: 16, fontWeight: '600', color: '#fff' },
+  cardApi: { fontSize: 11, color: '#ffd369', marginTop: 3, fontFamily: 'Menlo' },
+  cardDesc: { fontSize: 13, color: 'rgba(255,255,255,0.55)', marginTop: 4, lineHeight: 18 },
 })
