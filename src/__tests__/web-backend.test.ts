@@ -1,5 +1,5 @@
 // src/__tests__/web-backend.test.ts
-globalThis.__DEV__ = false
+;(globalThis as unknown as Record<string, unknown>).__DEV__ = false
 
 import { describe, test, expect } from 'bun:test'
 import { createWebBackend, type WebBackendModule } from '../web-backend'

@@ -15,7 +15,7 @@
 // prepare.ts does at runtime when the native module is unavailable.
 
 // IMPORTANT: __DEV__ must be set before any imports.
-globalThis.__DEV__ = false
+;(globalThis as unknown as Record<string, unknown>).__DEV__ = false
 
 import { describe, test, expect } from 'bun:test'
 import { buildPreparedText, buildPreparedTextWithSegments } from '../build'
@@ -58,22 +58,22 @@ function buildWidthMap(result: NativeSegmentResult): Map<string, number> {
 /** Mirrors prepare(text, style, options) in prepare.ts (no-native fallback). */
 function prepare(text: string, style: TextStyle, options?: PrepareOptions) {
   if (!text) {
-    const analysis = analyzeText([], [], {}, options?.whiteSpace)
+    const analysis = analyzeText([], [], { carryCJKAfterClosingQuote: false }, options?.whiteSpace)
     return buildPreparedText(analysis, new Map(), style)
   }
   const result = estimateSegments(text, style)
-  const analysis = analyzeText(result.segments, result.isWordLike, {}, options?.whiteSpace)
+  const analysis = analyzeText(result.segments, result.isWordLike, { carryCJKAfterClosingQuote: false }, options?.whiteSpace)
   return buildPreparedText(analysis, buildWidthMap(result), style)
 }
 
 /** Mirrors prepareWithSegments(text, style) — returns richer handle. */
 function prepareWithSegs(text: string, style: TextStyle, options?: PrepareOptions) {
   if (!text) {
-    const analysis = analyzeText([], [], {}, options?.whiteSpace)
+    const analysis = analyzeText([], [], { carryCJKAfterClosingQuote: false }, options?.whiteSpace)
     return buildPreparedTextWithSegments(analysis, new Map(), style)
   }
   const result = estimateSegments(text, style)
-  const analysis = analyzeText(result.segments, result.isWordLike, {}, options?.whiteSpace)
+  const analysis = analyzeText(result.segments, result.isWordLike, { carryCJKAfterClosingQuote: false }, options?.whiteSpace)
   return buildPreparedTextWithSegments(analysis, buildWidthMap(result), style)
 }
 

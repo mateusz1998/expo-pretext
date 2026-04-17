@@ -55,7 +55,7 @@ export function getSharedGraphemeSegmenter(): GraphemeSegmenterLike {
       }
     }
   }
-  return sharedGraphemeSegmenter
+  return sharedGraphemeSegmenter!
 }
 
 export function clearGraphemeSegmenter(): void {

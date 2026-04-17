@@ -1,4 +1,4 @@
-globalThis.__DEV__ = false
+;(globalThis as unknown as Record<string, unknown>).__DEV__ = false
 
 import { describe, test, expect } from 'bun:test'
 import { computeZoomLayout } from '../zoom'

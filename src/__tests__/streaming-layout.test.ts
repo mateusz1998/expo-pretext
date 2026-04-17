@@ -1,4 +1,4 @@
-globalThis.__DEV__ = false
+;(globalThis as unknown as Record<string, unknown>).__DEV__ = false
 
 import { describe, it, expect } from 'bun:test'
 import { prepareWithSegments } from '../prepare'

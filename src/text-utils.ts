@@ -1,5 +1,5 @@
 import { prepare, prepareWithSegments } from './prepare'
-import { layout, layoutNextLineRange, materializeLineRange } from './layout'
+import { layout, layoutWithLines, layoutNextLineRange, materializeLineRange } from './layout'
 import type { TextStyle, LayoutCursor } from './types'
 
 export type TruncationResult = {
@@ -62,7 +62,7 @@ export function truncateText(
 
   const ellipsis = options?.ellipsis ?? '\u2026'
   const prepared = prepareWithSegments(text, style)
-  const result = layout(prepared, maxWidth)
+  const result = layoutWithLines(prepared, maxWidth)
 
   // Fits within maxLines — no truncation needed
   if (result.lineCount <= maxLines) {

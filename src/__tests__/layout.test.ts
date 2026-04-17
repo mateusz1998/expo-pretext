@@ -45,21 +45,21 @@ function buildWidthMap(result: NativeSegmentResult): Map<string, number> {
 
 function makePrepared(text: string, style: TextStyle = STYLE) {
   if (!text) {
-    const analysis = analyzeText([], [], {}, undefined)
+    const analysis = analyzeText([], [], { carryCJKAfterClosingQuote: false }, undefined)
     return buildPreparedText(analysis, new Map(), style)
   }
   const result = estimateSegments(text, style)
-  const analysis = analyzeText(result.segments, result.isWordLike, {}, undefined)
+  const analysis = analyzeText(result.segments, result.isWordLike, { carryCJKAfterClosingQuote: false }, undefined)
   return buildPreparedText(analysis, buildWidthMap(result), style)
 }
 
 function makePreparedWithSegments(text: string, style: TextStyle = STYLE) {
   if (!text) {
-    const analysis = analyzeText([], [], {}, undefined)
+    const analysis = analyzeText([], [], { carryCJKAfterClosingQuote: false }, undefined)
     return buildPreparedTextWithSegments(analysis, new Map(), style)
   }
   const result = estimateSegments(text, style)
-  const analysis = analyzeText(result.segments, result.isWordLike, {}, undefined)
+  const analysis = analyzeText(result.segments, result.isWordLike, { carryCJKAfterClosingQuote: false }, undefined)
   return buildPreparedTextWithSegments(analysis, buildWidthMap(result), style)
 }
 

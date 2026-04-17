@@ -1,4 +1,4 @@
-globalThis.__DEV__ = false
+;(globalThis as unknown as Record<string, unknown>).__DEV__ = false
 
 // line-break.test.ts
 // Tests for the core line-breaking algorithm:

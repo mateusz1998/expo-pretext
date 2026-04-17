@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.13.1 — 2026-04-17
+
+### Fixed
+
+- **TypeScript cleanup** — `tsc --noEmit` now passes with zero errors.
+  - `src/build.ts` — narrow `GraphemeSegmenterLike | null` at the final return.
+  - `src/text-utils.ts` — `truncateText` now uses `layoutWithLines` instead
+    of `layout` so the branded `PreparedTextWithSegments` handle typechecks.
+  - Added `react-native-reanimated` and `@types/bun` as dev dependencies so
+    the optional-peer hooks and test files resolve types during typecheck.
+  - Test-only fixes: `globalThis.__DEV__ = false` now uses the standard
+    `(globalThis as unknown as Record<string, unknown>)` cast; `analyzeText`
+    test calls now pass a full `AnalysisProfile` instead of `{}`.
+
+No runtime changes. Tests: 447 passing.
+
 ## 0.13.0 — 2026-04-17
 
 ### Example app

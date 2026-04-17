@@ -1,4 +1,4 @@
-globalThis.__DEV__ = false
+;(globalThis as unknown as Record<string, unknown>).__DEV__ = false
 
 import { mock } from 'bun:test'
 
