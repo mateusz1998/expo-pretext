@@ -2,6 +2,8 @@
 
 **The text layout primitive React Native was missing.** Native measurement, ~0.0002ms pure-JS layout arithmetic, and full control over how text flows — around shapes, inside gestures, through animations. All with regular `<View>` and `<Text>`. No Skia canvas, no SVG tricks.
 
+**v1.0.0 is here.** Production-ready. Closes [18+ open React Native text bugs](#v100--fixes-for-18-open-rnexpo-text-bugs) — Android cut-off clusters, italic clipping, `numberOfLines` edge cases, font-load races, silent font fallback, and CJK typography.
+
 [![npm](https://img.shields.io/npm/v/expo-pretext.svg)](https://www.npmjs.com/package/expo-pretext)
 [![license](https://img.shields.io/npm/l/expo-pretext.svg)](./LICENSE)
 [![tests](https://img.shields.io/badge/tests-621%20passing-brightgreen.svg)](./src/__tests__)
@@ -172,6 +174,96 @@ function ZoomableText({ text, maxWidth }) {
 }
 ```
 
+### Line-by-line rendering (bypasses Android wrap/cut-off bugs)
+
+Since RN 0.78, Android's text renderer has regressed in several ways: descender clipping, text disappearing under certain font weights, extra wraps from `letterSpacing`. `<SafeText>` computes line breaks ourselves and emits one `<Text>` per line — RN has no wrap decision left to make, and cut-off goes away.
+
+```tsx
+import { SafeText } from 'expo-pretext'
+
+<SafeText
+  style={{ fontFamily: 'Inter', fontSize: 16, lineHeight: 24 }}
+  maxWidth={containerWidth}
+>
+  {paragraphText}
+</SafeText>
+```
+
+Closes [RN #15114](https://github.com/facebook/react-native/issues/15114), [#49886](https://github.com/facebook/react-native/issues/49886), [#53286](https://github.com/facebook/react-native/issues/53286), [#53666](https://github.com/facebook/react-native/issues/53666), [#56402](https://github.com/facebook/react-native/issues/56402), [#48921](https://github.com/facebook/react-native/issues/48921).
+
+### Truncation without `numberOfLines` edge cases
+
+`numberOfLines` + `ellipsizeMode` has long-standing issues: Android's `middle` / `head` modes break for multi-line; iOS drops the ellipsis when the source has `\n`; the ellipsis inherits the trimmed text's background color. `<TruncatedText>` computes the visible substring in JS and renders it as plain text.
+
+```tsx
+import { TruncatedText } from 'expo-pretext'
+
+<TruncatedText
+  style={{ fontFamily: 'Inter', fontSize: 14 }}
+  maxWidth={containerWidth}
+  maxLines={3}
+  mode="tail"   // or 'head' / 'middle'
+>
+  {longArticleText}
+</TruncatedText>
+```
+
+Closes [RN #19117](https://github.com/facebook/react-native/issues/19117), [#41405](https://github.com/facebook/react-native/issues/41405), [#37926](https://github.com/facebook/react-native/issues/37926).
+
+### Auto cache invalidation on font load / Dynamic Type
+
+Call `enableAutoInvalidation()` once at app root; caches clear automatically on system font-scale changes and on `expo-font` load events.
+
+```tsx
+import { enableAutoInvalidation, notifyFontsLoaded } from 'expo-pretext'
+import { useFonts } from 'expo-font'
+
+export default function App() {
+  const [loaded] = useFonts({ Inter: require('./Inter.ttf') })
+
+  useEffect(() => {
+    const stop = enableAutoInvalidation()
+    return stop
+  }, [])
+
+  useEffect(() => {
+    if (loaded) notifyFontsLoaded()
+  }, [loaded])
+
+  // …
+}
+```
+
+Addresses [Expo #21885](https://github.com/expo/expo/issues/21885) (82 comments on `useFonts` reliability).
+
+### Detect silent font fallback (RN 0.83 New Arch)
+
+Custom fonts sometimes report as loaded but fall back to System. `verifyFontsLoaded()` measures a reference string with the requested font vs System and reports whether the custom font is actually applied.
+
+```ts
+import { verifyFontsLoaded } from 'expo-pretext'
+
+const v = verifyFontsLoaded({ fontFamily: 'Inter', fontSize: 16 })
+if (v && !v.applied) {
+  console.warn('Inter is not being applied — falling back to System')
+}
+```
+
+Closes [RN #54934](https://github.com/facebook/react-native/issues/54934), [#56309](https://github.com/facebook/react-native/issues/56309), [#54642](https://github.com/facebook/react-native/issues/54642).
+
+### Skia adapter — `measureRuns()`
+
+For `react-native-skia` users who need precise glyph bounds with font fallback resolved in JS ([Skia #3493](https://github.com/Shopify/react-native-skia/issues/3493), [#3488](https://github.com/Shopify/react-native-skia/issues/3488), [#1736](https://github.com/Shopify/react-native-skia/issues/1736)).
+
+```ts
+import { measureRuns } from 'expo-pretext'
+
+const { naturalWidth, naturalHeight, runs } = measureRuns('Hello', style)
+// runs: Array<{ text, bounds, advance, font: { family, size, weight, style } }>
+```
+
+Pure measurement — doesn't require `react-native-skia` installed.
+
 ### Fix italic text clipping (RN #56349)
 
 React Native sizes text containers to advance width, but italic glyphs extend beyond that — causing visual clipping. expo-pretext fixes this with ink-bounds measurement.
@@ -219,30 +311,46 @@ const { padding, inkWidth } = getInkSafePadding(text, style)
 
 | Category | What you get |
 |---|---|
+| **Drop-in components** | `<SafeText>`, `<TruncatedText>`, `<InkSafeText>` |
 | **Layout primitives** | `layoutColumn` (obstacles), `useObstacleLayout`, `fitFontSize`, `truncateText`, `customBreakRules`, `measureNaturalWidth`, `measureInkWidth` (italic-safe) |
-| `<InkSafeText>` | Drop-in `<Text>` replacement — auto-fixes italic/bold clipping |
 | **Virtualization** | `useTextHeight`, `useFlashListHeights`, `measureHeights` (batch) |
 | **Streaming AI chat** | `useStreamingLayout`, `useMultiStreamLayout`, `prepareStreaming`, `measureCodeBlockHeight` |
 | **Animation (Reanimated)** | `useAnimatedTextHeight`, `useCollapsibleHeight`, `usePinchToZoomText`, `useTypewriterLayout`, `useTextMorphing` |
 | **Rich inline flow** | `prepareInlineFlow`, `walkInlineFlowLines`, `measureInlineFlow` — mixed fonts, @mentions, pills |
-| **Accessibility** | `getFontScale`, `onFontScaleChange`, `clearAllCaches` — Dynamic Type reactive |
+| **Accessibility** | `getFontScale`, `onFontScaleChange`, `clearAllCaches`, `enableAutoInvalidation`, `notifyFontsLoaded` |
 | **Cross-platform consistency** | `ENGINE_PROFILES`, `setEngineProfile`, `getEngineProfile` — iOS ≡ Android ≡ Web |
-| **Font metrics** | `getFontMetrics` — native `UIFont` / `Paint.FontMetrics` / Web Canvas fallback |
+| **Font metrics + fallback** | `getFontMetrics`, `resolveFontFamily`, `validateFont`, `verifyFontsLoaded` |
+| **Hyphenation** | `compileHyphenationPatterns`, `hyphenate`, `hyphenateAndJoin` (Liang-Knuth; bring your own TeX patterns) |
+| **Skia adapter** | `measureRuns` — per-run bounds + advance + font for Skia Paragraph |
 | **Developer tools** | `<PretextDebugOverlay>`, `compareDebugMeasurement`, `buildHeightSnapshot`, `compareHeightSnapshots`, `prepareWithBudget`, `PrepareBudgetTracker` |
 | **Power API** | `prepare`, `layout`, `layoutWithLines`, `layoutNextLine`, `walkLineRanges`, `prepareWithSegments` |
 
 See [`src/index.ts`](./src/index.ts) for the full public surface.
 
+## v1.0.0 — fixes for 18+ open RN/Expo text bugs
+
+| # | Feature | Closes |
+|---|---------|--------|
+| 1 | `letterSpacing` support | [RN #54823](https://github.com/facebook/react-native/issues/54823), [#46436](https://github.com/facebook/react-native/issues/46436) |
+| 2 | Auto cache invalidation | [Expo #21885](https://github.com/expo/expo/issues/21885) (82 comments) |
+| 3 | `<InkSafeText strict>` | [RN #49886](https://github.com/facebook/react-native/issues/49886), [#53286](https://github.com/facebook/react-native/issues/53286), [#56402](https://github.com/facebook/react-native/issues/56402), [#15114](https://github.com/facebook/react-native/issues/15114) |
+| 4 | `<TruncatedText>` | [RN #19117](https://github.com/facebook/react-native/issues/19117), [#41405](https://github.com/facebook/react-native/issues/41405), [#37926](https://github.com/facebook/react-native/issues/37926) |
+| 5 | `<SafeText>` (flagship) | [RN #15114](https://github.com/facebook/react-native/issues/15114), [#49886](https://github.com/facebook/react-native/issues/49886), [#53286](https://github.com/facebook/react-native/issues/53286), [#53666](https://github.com/facebook/react-native/issues/53666), [#56402](https://github.com/facebook/react-native/issues/56402), [#48921](https://github.com/facebook/react-native/issues/48921) |
+| 6 | Kinsoku Shori (CJK) | Japanese / Chinese line-break correctness |
+| 7 | `verifyFontsLoaded()` | [RN #54934](https://github.com/facebook/react-native/issues/54934), [#56309](https://github.com/facebook/react-native/issues/56309), [#54642](https://github.com/facebook/react-native/issues/54642) |
+| 8 | `measureRuns()` Skia adapter | [Skia #3493](https://github.com/Shopify/react-native-skia/issues/3493), [#3488](https://github.com/Shopify/react-native-skia/issues/3488), [#1736](https://github.com/Shopify/react-native-skia/issues/1736) |
+
 ## Internationalization
 
 Full Unicode via native OS segmenters. No locale hacks, no userland `Intl` polyfills, no manual script detection:
 
-- **CJK** (Chinese, Japanese, Korean) — per-character breaking with kinsoku rules
-- **Arabic, Hebrew** — RTL with bidi metadata
+- **CJK** (Chinese, Japanese, Korean) — per-character breaking with Kinsoku Shori (`、。）」` never start a line; `（「『` never end one) — locked in with 13 targeted tests
+- **Arabic, Hebrew** — RTL with bidi metadata; full UBA rules covered by 30 tests
 - **Thai, Lao, Khmer, Myanmar** — dictionary-based word boundaries
 - **Georgian, Devanagari, Armenian, Ethiopic** — all native scripts
 - **Emoji** — compound graphemes, flag sequences, ZWJ family joiners
 - **Mixed scripts** in a single string, measured correctly
+- **Hyphenation** (Liang-Knuth) — user-supplied TeX patterns, any language
 
 ## Performance
 
