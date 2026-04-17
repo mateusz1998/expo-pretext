@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.14.0 — 2026-04-17
+
+### Added
+
+- **Benchmark suite** — `bun run bench` runs a microbenchmark over all the
+  hot primitives (`layout`, `prepare`, `measureHeights`, `layoutWithLines`,
+  `measureNaturalWidth`) and reports median / p95 / p99 / ops/s. Lives at
+  [`scripts/bench.ts`](./scripts/bench.ts); latest numbers + narrative at
+  [`docs/BENCHMARKS.md`](./docs/BENCHMARKS.md).
+- **GitHub Actions CI** — `.github/workflows/ci.yml` runs typecheck +
+  tests + bench smoke on every push and PR to `main`. Tag pushes trigger
+  `.github/workflows/publish.yml` for automated `npm publish` (needs
+  `NPM_TOKEN` repo secret).
+- **Vercel web deploy config** — `vercel.json` at the repo root builds the
+  example app for web (`expo export --platform web`) so the live demo can
+  be deployed with a single `vercel --prod` from the repo root.
+
+### README
+
+- Badge count: 392 → 447 passing tests; benchmarks badge added.
+
 ## 0.13.1 — 2026-04-17
 
 ### Fixed
